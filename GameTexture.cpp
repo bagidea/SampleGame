@@ -3,6 +3,10 @@
 GameTexture::GameTexture()
 {
 	tex = NULL;
+	x = 0;
+	y = 0;
+	width = 0;
+	height = 0;
 }
 
 GameTexture::~GameTexture()
@@ -27,6 +31,9 @@ bool GameTexture::Load(string path)
 		success = false;
 		cerr << "IMG load Error : " << IMG_GetError() << endl;
 	}else{
+		width = img->w;
+		height = img->h;
+
 		tex = SDL_CreateTextureFromSurface(renderer, img);
 		if(tex == NULL)
 		{
@@ -40,5 +47,6 @@ bool GameTexture::Load(string path)
 
 void GameTexture::Render()
 {
-	SDL_RenderCopy(renderer, tex, NULL, NULL);
+	SDL_Rect quad = {x, y, width, height};
+	SDL_RenderCopy(renderer, tex, NULL, &quad);
 }

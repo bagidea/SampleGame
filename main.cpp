@@ -7,7 +7,7 @@ GameTexture image;
 void Start()
 {
 	image.SetRenderer(bis.GetRenderer());
-	if(!image.Load("source/BG.png"))
+	if(!image.Load("source/icon.png"))
 	{
 		cerr << "Load source/Bomb.png Fail" << endl;
 	}

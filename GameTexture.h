@@ -21,6 +21,8 @@ public:
 private:
 	SDL_Renderer* renderer;
 	SDL_Texture* tex;
+
+	int x, y, width, height;
 };
 
 #endif
