@@ -17,6 +17,16 @@ public:
 	void SetRenderer(SDL_Renderer* renderer);
 	bool Load(string path);
 
+	void SetX(int value);
+	void SetY(int value);
+	void SetWidth(int value);
+	void SetHeight(int value);
+
+	int GetX();
+	int GetY();
+	int GetWidth();
+	int GetHeight();
+
 	void Render();		
 private:
 	SDL_Renderer* renderer;

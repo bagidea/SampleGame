@@ -45,6 +45,16 @@ bool GameTexture::Load(string path)
 	return success;
 }
 
+void GameTexture::SetX(int value){x = value;}
+void GameTexture::SetY(int value){y = value;}
+void GameTexture::SetWidth(int value){width = value;}
+void GameTexture::SetHeight(int value){height = value;}
+
+int GameTexture::GetX(){return x;}
+int GameTexture::GetY(){return y;}
+int GameTexture::GetWidth(){return width;}
+int GameTexture::GetHeight(){return height;}
+
 void GameTexture::Render()
 {
 	SDL_Rect quad = {x, y, width, height};
