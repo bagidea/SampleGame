@@ -92,6 +92,11 @@ void GameWindow::Run(void* Start, void* Update)
 	Close();
 }
 
+SDL_Renderer* GameWindow::GetRenderer()
+{
+	return renderer;
+}
+
 void GameWindow::Close()
 {
 	SDL_DestroyRenderer(renderer);

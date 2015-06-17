@@ -1,15 +1,21 @@
 #include "GameWindow.h"
+#include "GameTexture.h"
 
 GameWindow bis;
+GameTexture image;
 
 void Start()
 {
-
+	image.SetRenderer(bis.GetRenderer());
+	if(!image.Load("source/BG.png"))
+	{
+		cerr << "Load source/Bomb.png Fail" << endl;
+	}
 }
 
 void Update()
 {
-
+	image.Render();
 }
 
 int main(int argc, char* argv[])

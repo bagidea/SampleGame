@@ -16,6 +16,8 @@ public:
 
 	bool CreateWindow(string title, int windowWidth, int windowHeight);
 	void Run(void* Start = NULL, void* Update = NULL);
+
+	SDL_Renderer* GetRenderer();
 private:
 	bool quit;
 	SDL_Event e;
