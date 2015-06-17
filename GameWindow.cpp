@@ -38,6 +38,12 @@ bool GameWindow::CreateWindow(string title, int windowWidth, int windowHeight)
 				cerr << "SDL Create Renderer Error : " << SDL_GetError() << endl;
 			}else{
 				SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+
+				if(IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG) < 0)
+				{
+					success = false;
+					cerr << "IMG Init Error : " << IMG_GetError() << endl;
+				}
 			}
 		}
 	}
