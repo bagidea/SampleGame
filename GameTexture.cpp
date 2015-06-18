@@ -69,8 +69,6 @@ void GameTexture::SetRotate(int angle)
 void GameTexture::SetClip(int x, int y, int width, int height)
 {
 	clip = SDL_Rect{x, y, width, height};
-	this->width = width;
-	this->height = height;
 }
 
 int GameTexture::GetX(){return x;}
