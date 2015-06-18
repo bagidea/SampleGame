@@ -21,6 +21,8 @@ public:
 	void SetY(int value);
 	void SetWidth(int value);
 	void SetHeight(int value);
+	void SetCenter(int x, int y);
+	void SetRotate(int angle);
 
 	int GetX();
 	int GetY();
@@ -33,6 +35,10 @@ private:
 	SDL_Texture* tex;
 
 	int x, y, width, height;
+	SDL_Rect clip;
+	double rotation;
+	SDL_Point center;
+	SDL_RendererFlip flip;
 };
 
 #endif

@@ -4,10 +4,12 @@
 GameWindow* bis;
 GameTexture* image;
 
+int angle;
 int speed;
 
 void Start()
 {
+	angle = 0;
 	speed = 1;
 
 	image = new GameTexture();
@@ -17,16 +19,17 @@ void Start()
 		cerr << "Load source/Bomb.png Fail" << endl;
 	}
 
-	image->SetWidth(50);
-	image->SetHeight(50);
+	image->SetWidth(300);
+	image->SetHeight(300);
+	image->SetCenter(150, 150);
+	image->SetX(250);
+	image->SetY(150);
 }
 
 void Update()
 {
-	image->SetX(image->GetX()+speed);
-	image->SetY(image->GetY()+speed);
-	image->SetWidth(image->GetWidth()+speed);
-	image->SetHeight(image->GetHeight()+speed);
+	angle++;
+	image->SetRotate(angle);
 	image->Render();
 }
 
