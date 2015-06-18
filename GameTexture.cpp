@@ -37,7 +37,7 @@ bool GameTexture::Load(string path)
 	}else{
 		width = img->w;
 		height = img->h;
-		clip = SDL_Rect{0, 0, width, height};;
+		clip = SDL_Rect{0, 0, width, height};
 
 		tex = SDL_CreateTextureFromSurface(renderer, img);
 		if(tex == NULL)
