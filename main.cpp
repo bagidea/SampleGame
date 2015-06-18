@@ -2,40 +2,37 @@
 #include "GameTexture.h"
 
 GameWindow* bis;
-GameTexture* image;
-
-int angle;
-int speed;
+GameTexture* image1;
+GameTexture* image2;
 
 void Start()
 {
-	angle = 0;
-	speed = 1;
+	image1 = new GameTexture();
+	image1->SetRenderer(bis->GetRenderer());
 
-	image = new GameTexture();
-	image->SetRenderer(bis->GetRenderer());
-	if(!image->Load("source/Bomb.png"))
+	image2 = new GameTexture();
+	image2->SetRenderer(bis->GetRenderer());
+
+	if(!image1->Load("source/SPtest.png") || !image2->Load("source/SPtest.png"))
 	{
-		cerr << "Load source/Bomb.png Fail" << endl;
+		cerr << "Load source/SPtest.png Fail" << endl;
 	}
 
-	image->SetWidth(300);
-	image->SetHeight(300);
-	image->SetCenter(150, 150);
-	image->SetX(250);
-	image->SetY(150);
+	image1->SetClip(0, 0, 90, 140);
+	image2->SetClip(90, 0, 90, 140);
+	image2->SetX(150);
 }
 
 void Update()
 {
-	angle++;
-	image->SetRotate(angle);
-	image->Render();
+	image1->Render();
+	image2->Render();
 }
 
 void Close()
 {
-	delete image;
+	delete image1;
+	delete image2;
 	delete bis;
 }
 

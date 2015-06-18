@@ -23,6 +23,7 @@ public:
 	void SetHeight(int value);
 	void SetCenter(int x, int y);
 	void SetRotate(int angle);
+	void SetClip(int x, int y, int width, int height);
 
 	int GetX();
 	int GetY();
