@@ -17,10 +17,14 @@ GameObject::GameObject(SDL_Renderer* renderer)
 		this->renderer = renderer;
 		this->tex->SetRenderer(renderer);
 	}
+
+	isPlay = false;
 }
 
 GameObject::~GameObject()
 {
+	clipList.clear();
+
 	delete tex;
 	tex = NULL;
 }
@@ -85,6 +89,16 @@ void GameObject::Render()
 	if(clipList.size() > 0)
 	{
 		tex->SetClip(clipList[index].x, clipList[index].y, clipList[index].w, clipList[index].h);
+
+		if(isPlay)
+		{
+			index++;
+
+			if(index >= clipList.size())
+			{
+				index = 0;
+			}
+		}
 	}
 
 	tex->Render();
@@ -94,3 +108,7 @@ void GameObject::ClearClip()
 {
 	clipList.clear();
 }
+
+bool GameObject::IsPlay(){return isPlay;}
+void GameObject::Play(){isPlay = true;};
+void GameObject::Stop(){isPlay = false;};

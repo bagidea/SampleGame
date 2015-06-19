@@ -29,7 +29,12 @@ public:
 
 	void Render();
 	void ClearClip();
+
+	bool IsPlay();
+	void Play();
+	void Stop();
 private:
+	bool isPlay;
 	int index;
 	vector<SDL_Rect> clipList;
 

@@ -14,7 +14,8 @@ void Start()
 	mc->LoadClip("source/SPplayer.animate");
 	mc->width = 80;
 	mc->height = 120;
-	mc->SetFrame(6);
+
+	mc->Play();
 }
 
 void Update()
