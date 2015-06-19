@@ -28,6 +28,7 @@ public:
 	void SetFrame(int index);
 
 	void Render();
+	void ClearClip();
 private:
 	int index;
 	vector<SDL_Rect> clipList;

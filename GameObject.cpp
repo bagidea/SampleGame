@@ -89,3 +89,8 @@ void GameObject::Render()
 
 	tex->Render();
 }
+
+void GameObject::ClearClip()
+{
+	clipList.clear();
+}
