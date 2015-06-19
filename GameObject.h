@@ -13,6 +13,8 @@ using namespace std;
 class GameObject
 {
 public:
+	int x, y, width, height;
+
 	GameObject(SDL_Renderer* renderer = NULL);
 	~GameObject();
 

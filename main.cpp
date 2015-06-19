@@ -8,6 +8,11 @@ void Start()
 {
 	mc = new GameObject(bis->GetRenderer());
 	mc->Load("source/SPtest.png");
+
+	mc->x = 0;
+	mc->y = 210;
+	mc->width = 800;
+	mc->height = 180;
 }
 
 void Update()
