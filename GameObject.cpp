@@ -2,6 +2,8 @@
 
 GameObject::GameObject(SDL_Renderer* renderer)
 {
+	index = 0;
+
 	x = 0;
 	y = 0;
 	width = 0;
@@ -39,12 +41,22 @@ void GameObject::Load(string path)
 	height = tex->GetHeight();
 }
 
+void GameObject::AddClip(SDL_Rect* clip)
+{
+	clipList.push_back(clip);
+}
+
 void GameObject::Render()
 {
 	tex->SetX(x);
 	tex->SetY(y);
 	tex->SetWidth(width);
 	tex->SetHeight(height);
+
+	if(clipList.size() > 0)
+	{
+		tex->SetClip(clipList[index]->x, clipList[index]->y, clipList[index]->w, clipList[index]->h);
+	}
 
 	tex->Render();
 }
