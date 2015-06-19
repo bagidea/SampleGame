@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <fstream>
+#include <cstdio>
 #include <SDL.h>
 #include <SDL_image.h>
 
@@ -22,11 +24,13 @@ public:
 	void SetRenderer(SDL_Renderer* renderer);
 	void Load(string path);
 	void AddClip(SDL_Rect* clip);
+	void LoadClip(string path);
+	void SetFrame(int index);
 
 	void Render();
 private:
 	int index;
-	vector<SDL_Rect*> clipList;
+	vector<SDL_Rect> clipList;
 
 	SDL_Renderer* renderer;
 	GameTexture* tex;

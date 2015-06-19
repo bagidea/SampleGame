@@ -43,7 +43,36 @@ void GameObject::Load(string path)
 
 void GameObject::AddClip(SDL_Rect* clip)
 {
-	clipList.push_back(clip);
+	for(int i = 0; i < sizeof(clip); i++)
+	{
+		clipList.push_back(clip[i]);
+	}
+}
+
+void GameObject::LoadClip(string path)
+{
+	string line;
+
+	ifstream in(path.c_str());
+	if(!in.is_open())
+	{
+		cerr << "Can't Load File : " << path << endl;
+	}else{
+		while(in.good())
+		{
+			getline(in, line);
+			int _x, _y, _w, _h;
+			sscanf(line.c_str(), "%d/%d/%d/%d", &_x, &_y, &_w, &_h);
+
+			SDL_Rect rect = {_x, _y, _w, _h};
+			clipList.push_back(rect);
+		}
+	}
+}
+
+void GameObject::SetFrame(int index)
+{
+	this->index = index;
 }
 
 void GameObject::Render()
@@ -55,7 +84,7 @@ void GameObject::Render()
 
 	if(clipList.size() > 0)
 	{
-		tex->SetClip(clipList[index]->x, clipList[index]->y, clipList[index]->w, clipList[index]->h);
+		tex->SetClip(clipList[index].x, clipList[index].y, clipList[index].w, clipList[index].h);
 	}
 
 	tex->Render();
