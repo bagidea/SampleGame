@@ -79,6 +79,17 @@ void GameObject::SetFrame(int index)
 	this->index = index;
 }
 
+void GameObject::SetAnimation(int start, int end)
+{
+	this->start = start;
+	this->end = end;
+}
+
+void GameObject::SetFlip(SDL_RendererFlip flip)
+{
+	tex->SetFlip(flip);
+}
+
 void GameObject::Render()
 {
 	tex->SetX(x);
@@ -94,9 +105,9 @@ void GameObject::Render()
 		{
 			index++;
 
-			if(index >= clipList.size())
+			if(index >= end)
 			{
-				index = 0;
+				index = start;
 			}
 		}
 	}

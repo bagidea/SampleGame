@@ -15,9 +15,10 @@ public:
 	~GameWindow();
 
 	bool CreateWindow(string title, int windowWidth, int windowHeight);
-	void Run(void* Start = NULL, void* Update = NULL);
+	void Run(void* Start = NULL, void* Update = NULL, void* Event = NULL);
 
 	SDL_Renderer* GetRenderer();
+	SDL_Event GetEvent();
 private:
 	bool quit;
 	SDL_Event e;
@@ -27,6 +28,7 @@ private:
 
 	void (*Start)();
 	void (*Update)();
+	void (*Event)();
 
 	void Close();
 };

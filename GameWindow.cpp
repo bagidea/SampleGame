@@ -51,10 +51,11 @@ bool GameWindow::CreateWindow(string title, int windowWidth, int windowHeight)
 	return success;	
 }
 
-void GameWindow::Run(void* Start, void* Update)
+void GameWindow::Run(void* Start, void* Update, void* Event)
 {
 	this->Start = (void(*)(void))Start;
 	this->Update = (void(*)(void))Update;
+	this->Event = (void(*)(void))Event;
 
 	if(this->Start != NULL)
 	{
@@ -65,6 +66,11 @@ void GameWindow::Run(void* Start, void* Update)
 	{
 		while(SDL_PollEvent(&e) != 0)
 		{
+			if(this->Event != NULL)
+			{
+				this->Event();
+			}
+
 			switch(e.type)
 			{
 			case SDL_QUIT:
@@ -95,6 +101,11 @@ void GameWindow::Run(void* Start, void* Update)
 SDL_Renderer* GameWindow::GetRenderer()
 {
 	return renderer;
+}
+
+SDL_Event GameWindow::GetEvent()
+{
+	return e;
 }
 
 void GameWindow::Close()

@@ -71,6 +71,11 @@ void GameTexture::SetClip(int x, int y, int width, int height)
 	clip = SDL_Rect{x, y, width, height};
 }
 
+void GameTexture::SetFlip(SDL_RendererFlip flip)
+{
+	this->flip = flip;
+}
+
 int GameTexture::GetX(){return x;}
 int GameTexture::GetY(){return y;}
 int GameTexture::GetWidth(){return width;}

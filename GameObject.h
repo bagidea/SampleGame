@@ -26,6 +26,8 @@ public:
 	void AddClip(SDL_Rect* clip);
 	void LoadClip(string path);
 	void SetFrame(int index);
+	void SetAnimation(int start = 0, int end = 0);
+	void SetFlip(SDL_RendererFlip flip = SDL_FLIP_NONE);
 
 	void Render();
 	void ClearClip();
@@ -36,6 +38,7 @@ public:
 private:
 	bool isPlay;
 	int index;
+	int start, end;
 	vector<SDL_Rect> clipList;
 
 	SDL_Renderer* renderer;
