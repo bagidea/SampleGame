@@ -5,7 +5,9 @@ int screenWidth = 800;
 int screenHeight = 600;
 
 GameWindow* bis;
+GameObject* bg;
 GameObject* mc;
+GameObject* wall;
 
 SDL_Rect Clip[8];
 
@@ -20,18 +22,30 @@ void Start()
 	Kleft = false;
 	Kright = false;
 
+	bg = new GameObject(bis->GetRenderer());
+	bg->Load("source/Floor.jpg");
+	bg->width = 800;
+	bg->height = 600;
+
 	mc = new GameObject(bis->GetRenderer());
 	mc->Load("source/SPplayer.png");
 
 	mc->LoadClip("source/SPplayer.animate");
 
-	mc->x = 360;
-	mc->y = 200;
+	mc->x = 10;
+	mc->y = 10;
 	mc->width = 80;
 	mc->height = 120;
 
 	mc->SetAnimation(0, 0);
 	mc->Play();
+
+	wall = new GameObject(bis->GetRenderer());
+	wall->Load("source/Box.png");
+	wall->x = 300;
+	wall->y = 200;
+	wall->width = 200;
+	wall->height = 200;
 }
 
 void Event();
@@ -83,6 +97,8 @@ void Update()
 		mc->x = screenWidth-mc->width;
 	}
 
+	bg->Render();
+	wall->Render();
 	mc->Render();
 }
 
