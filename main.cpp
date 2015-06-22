@@ -12,10 +12,14 @@ GameObject* wall;
 SDL_Rect Clip[8];
 
 int speed;
+int mX, mY;
 bool Kup, Kdown, Kleft, Kright;
 
 void Start()
 {
+	mX = 0;
+	mY = 0;
+
 	speed = 5;
 	Kup = false;
 	Kdown = false;
@@ -49,27 +53,36 @@ void Start()
 }
 
 void Event();
+bool Collision(GameObject* a, GameObject* b);
 
 void Update()
 {
 	if(Kup)
 	{
-		mc->y -= speed;
+		mY = -speed;
 	}
 	else if(Kdown)
 	{
-		mc->y += speed;
+		mY = speed;
+	}
+	else if(!Kup && !Kdown)
+	{
+		mY = 0;
 	}
 
 	if(Kleft)
 	{
-		mc->x -= speed;
+		mX = -speed;
 		mc->SetFlip(SDL_FLIP_HORIZONTAL);
 	}
 	else if(Kright)
 	{
-		mc->x += speed;
+		mX = speed;
 		mc->SetFlip(SDL_FLIP_NONE);
+	}
+	else if(!Kleft && !Kright)
+	{
+		mX = 0;
 	}
 
 	if(!Kup && !Kdown && !Kleft && !Kright)
@@ -79,22 +92,16 @@ void Update()
 		mc->SetAnimation(1, 7);
 	}
 
-	if(mc->y <= 0)
+	mc->y += mY;
+	if(mc->y <= 0 || mc->y >= screenHeight-mc->height || Collision(mc, wall))
 	{
-		mc->y = 0;	
-	}
-	else if(mc->y >= screenHeight-mc->height)
-	{
-		mc->y = screenHeight-mc->height;
+		mc->y -= mY;
 	}
 
-	if(mc->x <= 0)
+	mc->x += mX;
+	if(mc->x <= 0 || mc->x >= screenWidth-mc->width || Collision(mc, wall))
 	{
-		mc->x = 0;	
-	}
-	else if(mc->x >= screenWidth-mc->width)
-	{
-		mc->x = screenWidth-mc->width;
+		mc->x -= mX;
 	}
 
 	bg->Render();
@@ -143,6 +150,43 @@ void Event()
 		}
 		break;
 	}
+}
+
+bool Collision(GameObject* a, GameObject* b)
+{
+	int upA, upB, downA, downB, leftA, leftB, rightA, rightB;
+
+	upA = a->y;
+	upB = b->y;
+	downA = a->y+a->height;
+	downB = b->y+b->height;
+
+	leftA = a->x;
+	leftB = b->x;
+	rightA = a->x+a->width;
+	rightB = b->x+b->width;
+
+	if(upA >= downB)
+	{
+		return false;
+	}
+
+	if(downA <= upB)
+	{
+		return false;
+	}
+
+	if(leftA >= rightB)
+	{
+		return false;
+	}
+
+	if(rightA <= leftB)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void Close()
