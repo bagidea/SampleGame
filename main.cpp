@@ -53,7 +53,6 @@ void Start()
 }
 
 void Event();
-bool Collision(GameObject* a, GameObject* b);
 
 void Update()
 {
@@ -93,13 +92,13 @@ void Update()
 	}
 
 	mc->y += mY;
-	if(mc->y <= 0 || mc->y >= screenHeight-mc->height || Collision(mc, wall))
+	if(mc->y <= 0 || mc->y >= screenHeight-mc->height || mc->HitTest(wall))
 	{
 		mc->y -= mY;
 	}
 
 	mc->x += mX;
-	if(mc->x <= 0 || mc->x >= screenWidth-mc->width || Collision(mc, wall))
+	if(mc->x <= 0 || mc->x >= screenWidth-mc->width || mc->HitTest(wall))
 	{
 		mc->x -= mX;
 	}
@@ -150,43 +149,6 @@ void Event()
 		}
 		break;
 	}
-}
-
-bool Collision(GameObject* a, GameObject* b)
-{
-	int upA, upB, downA, downB, leftA, leftB, rightA, rightB;
-
-	upA = a->y;
-	upB = b->y;
-	downA = a->y+a->height;
-	downB = b->y+b->height;
-
-	leftA = a->x;
-	leftB = b->x;
-	rightA = a->x+a->width;
-	rightB = b->x+b->width;
-
-	if(upA >= downB)
-	{
-		return false;
-	}
-
-	if(downA <= upB)
-	{
-		return false;
-	}
-
-	if(leftA >= rightB)
-	{
-		return false;
-	}
-
-	if(rightA <= leftB)
-	{
-		return false;
-	}
-
-	return true;
 }
 
 void Close()

@@ -28,6 +28,7 @@ public:
 	void SetFrame(int index);
 	void SetAnimation(int start = 0, int end = 0);
 	void SetFlip(SDL_RendererFlip flip = SDL_FLIP_NONE);
+	bool HitTest(GameObject* hit);
 
 	void Render();
 	void ClearClip();

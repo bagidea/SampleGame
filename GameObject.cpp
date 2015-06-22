@@ -90,6 +90,43 @@ void GameObject::SetFlip(SDL_RendererFlip flip)
 	tex->SetFlip(flip);
 }
 
+bool GameObject::HitTest(GameObject* hit)
+{
+	int upA, upB, downA, downB, leftA, leftB, rightA, rightB;
+
+	upA = y;
+	upB = hit->y;
+	downA = y+height;
+	downB = hit->y + hit->height;
+
+	leftA = x;
+	leftB = hit->x;
+	rightA = x+width;
+	rightB = hit->x + hit->width;
+
+	if(upA >= downB)
+	{
+		return false;
+	}
+
+	if(downA <= upB)
+	{
+		return false;
+	}
+
+	if(leftA >= rightB)
+	{
+		return false;
+	}
+
+	if(rightA <= leftB)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 void GameObject::Render()
 {
 	tex->SetX(x);
