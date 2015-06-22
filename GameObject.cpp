@@ -2,6 +2,8 @@
 
 GameObject::GameObject(SDL_Renderer* renderer)
 {
+	timeScale = 1.0;
+	speedAnimation = 1;
 	index = 0;
 
 	x = 0;
@@ -127,6 +129,17 @@ bool GameObject::HitTest(GameObject* hit)
 	return true;
 }
 
+void GameObject::SetTimeScale(float tmr)
+{
+	if(tmr >= 1.0)
+		tmr = 1.0;
+	else if(tmr <= 0.0)
+		tmr = 0.0;
+
+	timeScale = tmr;
+	speedAnimation = 10 - (9 * timeScale);
+}
+
 void GameObject::Render()
 {
 	tex->SetX(x);
@@ -136,15 +149,23 @@ void GameObject::Render()
 
 	if(clipList.size() > 0)
 	{
-		tex->SetClip(clipList[index].x, clipList[index].y, clipList[index].w, clipList[index].h);
+		if(speedAnimation == 0)
+		{
+			tex->SetClip(clipList[index].x, clipList[index].y, clipList[index].w, clipList[index].h);
+		}else{
+			tex->SetClip(clipList[index/speedAnimation].x, clipList[index/speedAnimation].y, clipList[index/speedAnimation].w, clipList[index/speedAnimation].h);
+		}
 
 		if(isPlay)
 		{
-			index++;
-
-			if(index >= end)
+			if(timeScale > 0)
 			{
-				index = start;
+				index++;
+
+				if(index/speedAnimation >= end)
+				{
+					index = start;
+				}
 			}
 		}
 	}
@@ -157,6 +178,7 @@ void GameObject::ClearClip()
 	clipList.clear();
 }
 
+float GameObject::GetTimeScale(){return timeScale;}
 bool GameObject::IsPlay(){return isPlay;}
 void GameObject::Play(){isPlay = true;};
 void GameObject::Stop(){isPlay = false;};

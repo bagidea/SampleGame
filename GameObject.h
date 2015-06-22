@@ -29,14 +29,18 @@ public:
 	void SetAnimation(int start = 0, int end = 0);
 	void SetFlip(SDL_RendererFlip flip = SDL_FLIP_NONE);
 	bool HitTest(GameObject* hit);
+	void SetTimeScale(float tmr);
 
 	void Render();
 	void ClearClip();
 
+	float GetTimeScale();
 	bool IsPlay();
 	void Play();
 	void Stop();
 private:
+	float timeScale;
+	int speedAnimation;
 	bool isPlay;
 	int index;
 	int start, end;

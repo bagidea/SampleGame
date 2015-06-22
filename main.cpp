@@ -41,6 +41,7 @@ void Start()
 	mc->width = 80;
 	mc->height = 120;
 
+	mc->SetTimeScale(0.8);
 	mc->SetAnimation(0, 0);
 	mc->Play();
 
