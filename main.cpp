@@ -101,7 +101,7 @@ bool CheckCollision(GameObject* ob, bool chk = false)
 	{
 		if(chk)
 		{
-			if(topLeft == 1 && topRight == 1)
+			if(topLeft == 1 || topRight == 1)
 			{
 				ob->y = ((ob->y/100)*100)+100;
 				mY = 0;
