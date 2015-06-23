@@ -47,6 +47,11 @@ void GameObject::Load(string path)
 	height = tex->GetHeight();
 }
 
+void GameObject::SetGetTexture(GameTexture* tex)
+{
+	this->tex->SetTexture(tex->GetTexture());
+}
+
 void GameObject::AddClip(SDL_Rect* clip)
 {
 	for(int i = 0; i < sizeof(clip); i++)

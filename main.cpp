@@ -1,19 +1,53 @@
 #include "GameWindow.h"
 #include "GameObject.h"
 
+#include <vector>
+
 int screenWidth = 800;
 int screenHeight = 600;
 
 GameWindow* bis;
 GameObject* bg;
-GameObject* mc;
 GameObject* wall;
+GameObject* mc;
 
 SDL_Rect Clip[8];
 
 int speed;
 int mX, mY;
 bool Kup, Kdown, Kleft, Kright;
+
+int Map[6][8] = {
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 0, 0, 0, 0, 0, 0, 1,
+	1, 1, 1, 0, 0, 1, 1, 1,
+	1, 0, 0, 0, 0, 0, 0, 1,
+	1, 0, 0, 1, 1, 0, 0, 1,
+	1, 1, 1, 1, 1, 1, 1, 1
+};
+
+struct position
+{
+	int x, y;
+	position(int _x, int _y):x(_x), y(_y){}
+};
+vector<position*> tile;
+
+void GenMap()
+{
+	int i, a;
+
+	for(i = 0; i < 6; i++)
+	{
+		for(a = 0; a < 8; a++)
+		{
+			if(Map[i][a] == 1)
+			{
+				tile.push_back(new position(a*100, i*100));
+			}
+		}
+	}
+}
 
 void Start()
 {
@@ -27,30 +61,30 @@ void Start()
 	Kright = false;
 
 	bg = new GameObject(bis->GetRenderer());
-	bg->Load("source/Floor.jpg");
+	bg->Load("source/BG.jpg");
 	bg->width = 800;
 	bg->height = 600;
+
+	wall = new GameObject(bis->GetRenderer());
+	wall->Load("source/Wall.jpg");
+	wall->width = 100;
+	wall->height = 100;
+
+	GenMap();
 
 	mc = new GameObject(bis->GetRenderer());
 	mc->Load("source/SPplayer.png");
 
 	mc->LoadClip("source/SPplayer.animate");
 
-	mc->x = 10;
-	mc->y = 10;
-	mc->width = 80;
-	mc->height = 120;
+	mc->x = 150;
+	mc->y = 420;
+	mc->width = 50;
+	mc->height = 80;
 
 	mc->SetTimeScale(0.8);
 	mc->SetAnimation(0, 0);
 	mc->Play();
-
-	wall = new GameObject(bis->GetRenderer());
-	wall->Load("source/Box.png");
-	wall->x = 300;
-	wall->y = 200;
-	wall->width = 200;
-	wall->height = 200;
 }
 
 void Event();
@@ -93,19 +127,26 @@ void Update()
 	}
 
 	mc->y += mY;
-	if(mc->y <= 0 || mc->y >= screenHeight-mc->height || mc->HitTest(wall))
+	if(mc->y <= 0 || mc->y >= screenHeight-mc->height)
 	{
 		mc->y -= mY;
 	}
 
 	mc->x += mX;
-	if(mc->x <= 0 || mc->x >= screenWidth-mc->width || mc->HitTest(wall))
+	if(mc->x <= 0 || mc->x >= screenWidth-mc->width)
 	{
 		mc->x -= mX;
 	}
 
 	bg->Render();
-	wall->Render();
+
+	for(int i = 0; i < tile.size(); i++)
+	{
+		wall->x = tile[i]->x;
+		wall->y = tile[i]->y;
+		wall->Render();
+	}
+
 	mc->Render();
 }
 
@@ -154,6 +195,16 @@ void Event()
 
 void Close()
 {
+	delete bg;
+	bg = NULL;
+
+	for(int i = 0; i < tile.size(); i++)
+	{
+		delete tile[i];
+		tile[i] = NULL;
+	}
+	tile.clear();
+
 	delete mc;
 	mc = NULL;
 

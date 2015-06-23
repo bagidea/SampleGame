@@ -76,10 +76,16 @@ void GameTexture::SetFlip(SDL_RendererFlip flip)
 	this->flip = flip;
 }
 
+void GameTexture::SetTexture(SDL_Texture* tex)
+{
+	this->tex = tex;
+}
+
 int GameTexture::GetX(){return x;}
 int GameTexture::GetY(){return y;}
 int GameTexture::GetWidth(){return width;}
 int GameTexture::GetHeight(){return height;}
+SDL_Texture* GameTexture::GetTexture(){return tex;}
 
 void GameTexture::Render()
 {

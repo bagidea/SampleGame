@@ -25,11 +25,13 @@ public:
 	void SetRotate(int angle);
 	void SetClip(int x, int y, int width, int height);
 	void SetFlip(SDL_RendererFlip flip = SDL_FLIP_NONE);
+	void SetTexture(SDL_Texture* tex);
 
 	int GetX();
 	int GetY();
 	int GetWidth();
 	int GetHeight();
+	SDL_Texture* GetTexture();
 
 	void Render();		
 private:
