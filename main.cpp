@@ -139,11 +139,16 @@ void Update()
 		mX = 0;
 	}
 
-	if(!Kleft && !Kright)
+	if(!jump)
 	{
-		mc->SetAnimation(0, 0);
+		if(!Kleft && !Kright)
+		{
+			mc->SetAnimation(0, 0);
+		}else{
+			mc->SetAnimation(1, 7);
+		}
 	}else{
-		mc->SetAnimation(1, 7);
+		mc->SetAnimation(2, 2);
 	}
 
 	cout << mY << endl;
