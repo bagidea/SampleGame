@@ -151,8 +151,6 @@ void Update()
 		mc->SetAnimation(2, 2);
 	}
 
-	cout << mY << endl;
-
 	mc->y += mY;
 	if(mc->y <= 0 || mc->y >= screenHeight-mc->height || CheckCollision(mc, true))
 	{
