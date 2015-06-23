@@ -95,7 +95,7 @@ bool CheckCollision(GameObject* ob, bool chk = false)
 	int topLeft = Map[ob->y/100][ob->x/100];
 	int topRight = Map[ob->y/100][(ob->x+ob->width-1)/100];
 	int bottomLeft = Map[(ob->y+ob->height-1)/100][ob->x/100];
-	int bottomRight = Map[(ob->y+ob->height-1)/100][(ob->x+ob->width)/100];
+	int bottomRight = Map[(ob->y+ob->height-1)/100][(ob->x+ob->width-1)/100];
 
 	if(topLeft == 1 || topRight == 1 || bottomLeft == 1 || bottomRight == 1)
 	{
