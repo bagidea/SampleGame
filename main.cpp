@@ -13,9 +13,11 @@ GameObject* mc;
 
 SDL_Rect Clip[8];
 
+int gravity;
 int speed;
+bool jump;
 int mX, mY;
-bool Kup, Kdown, Kleft, Kright;
+bool kspace, Kleft, Kright;
 
 int Map[6][8] = {
 	1, 1, 1, 1, 1, 1, 1, 1,
@@ -54,9 +56,10 @@ void Start()
 	mX = 0;
 	mY = 0;
 
+	gravity = 5;
 	speed = 5;
-	Kup = false;
-	Kdown = false;
+	jump = false;
+	kspace = false;
 	Kleft = false;
 	Kright = false;
 
@@ -87,22 +90,39 @@ void Start()
 	mc->Play();
 }
 
-void Event();
+bool CheckCollision(GameObject* ob, bool chk = false)
+{
+	int topLeft = Map[ob->y/100][ob->x/100];
+	int topRight = Map[ob->y/100][(ob->x+ob->width-1)/100];
+	int bottomLeft = Map[(ob->y+ob->height-1)/100][ob->x/100];
+	int bottomRight = Map[(ob->y+ob->height-1)/100][(ob->x+ob->width)/100];
+
+	if(topLeft == 1 || topRight == 1 || bottomLeft == 1 || bottomRight == 1)
+	{
+		if(chk)
+		{
+			if(topLeft == 1 && topRight == 1)
+			{
+				ob->y = ((ob->y/100)*100)+100;
+				mY = 0;
+			}
+			
+			if(bottomLeft == 1 || bottomRight == 1)
+			{
+				mY = 0;
+				ob->y = (((ob->y+ob->height-1)/100)*100)-ob->height;
+				jump = false;
+			}
+		}
+		return true;
+	}
+
+	return false;
+}
 
 void Update()
 {
-	if(Kup)
-	{
-		mY = -speed;
-	}
-	else if(Kdown)
-	{
-		mY = speed;
-	}
-	else if(!Kup && !Kdown)
-	{
-		mY = 0;
-	}
+	mY += gravity;
 
 	if(Kleft)
 	{
@@ -119,21 +139,23 @@ void Update()
 		mX = 0;
 	}
 
-	if(!Kup && !Kdown && !Kleft && !Kright)
+	if(!Kleft && !Kright)
 	{
 		mc->SetAnimation(0, 0);
 	}else{
 		mc->SetAnimation(1, 7);
 	}
 
+	cout << mY << endl;
+
 	mc->y += mY;
-	if(mc->y <= 0 || mc->y >= screenHeight-mc->height)
+	if(mc->y <= 0 || mc->y >= screenHeight-mc->height || CheckCollision(mc, true))
 	{
 		mc->y -= mY;
 	}
 
 	mc->x += mX;
-	if(mc->x <= 0 || mc->x >= screenWidth-mc->width)
+	if(mc->x <= 0 || mc->x >= screenWidth-mc->width || CheckCollision(mc))
 	{
 		mc->x -= mX;
 	}
@@ -155,13 +177,14 @@ void Event()
 	switch(bis->GetEvent().type)
 	{
 	case SDL_KEYDOWN:
-		if(bis->GetEvent().key.keysym.sym == SDLK_UP)
+		if(bis->GetEvent().key.keysym.sym == SDLK_SPACE)
 		{
-			Kup = true;
-		}
-		else if(bis->GetEvent().key.keysym.sym == SDLK_DOWN)
-		{
-			Kdown = true;
+			if(!kspace && !jump)
+			{
+				mY = -50;
+				jump = true;
+				kspace = true;
+			}
 		}
 		else if(bis->GetEvent().key.keysym.sym == SDLK_LEFT)
 		{
@@ -173,13 +196,9 @@ void Event()
 		}
 		break;
 	case SDL_KEYUP:
-		if(bis->GetEvent().key.keysym.sym == SDLK_UP)
+		if(bis->GetEvent().key.keysym.sym == SDLK_SPACE)
 		{
-			Kup = false;
-		}
-		else if(bis->GetEvent().key.keysym.sym == SDLK_DOWN)
-		{
-			Kdown = false;
+			kspace = false;
 		}
 		else if(bis->GetEvent().key.keysym.sym == SDLK_LEFT)
 		{
