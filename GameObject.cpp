@@ -25,7 +25,7 @@ GameObject::GameObject(SDL_Renderer* renderer)
 
 GameObject::~GameObject()
 {
-	clipList.clear();
+	//clipList.clear();
 
 	delete tex;
 	tex = NULL;
@@ -47,9 +47,9 @@ void GameObject::Load(string path)
 	height = tex->GetHeight();
 }
 
-void GameObject::SetGetTexture(GameTexture* tex)
+void GameObject::SetTexture(GameTexture* tex)
 {
-	this->tex->SetTexture(tex->GetTexture());
+	this->tex = tex;
 }
 
 void GameObject::AddClip(SDL_Rect* clip)
@@ -145,6 +145,17 @@ void GameObject::SetTimeScale(float tmr)
 	speedAnimation = 10 - (9 * timeScale);
 }
 
+void GameObject::SetClip(vector<SDL_Rect> _clip)
+{
+	clipList.clear();
+	clipList = _clip;
+}
+
+vector<SDL_Rect> GameObject::GetClip()
+{
+	return clipList;
+}
+
 void GameObject::Render()
 {
 	tex->SetX(x);
@@ -183,6 +194,7 @@ void GameObject::ClearClip()
 	clipList.clear();
 }
 
+GameTexture* GameObject::GetTexture(){return tex;}
 float GameObject::GetTimeScale(){return timeScale;}
 bool GameObject::IsPlay(){return isPlay;}
 void GameObject::Play(){isPlay = true;};

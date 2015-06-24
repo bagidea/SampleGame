@@ -23,7 +23,7 @@ public:
 
 	void SetRenderer(SDL_Renderer* renderer);
 	void Load(string path);
-	void SetGetTexture(GameTexture* tex);
+	void SetTexture(GameTexture* tex);
 	void AddClip(SDL_Rect* clip);
 	void LoadClip(string path);
 	void SetFrame(int index);
@@ -32,9 +32,13 @@ public:
 	bool HitTest(GameObject* hit);
 	void SetTimeScale(float tmr);
 
+	void SetClip(vector<SDL_Rect> _clip);
+	vector<SDL_Rect> GetClip();
+
 	void Render();
 	void ClearClip();
 
+	GameTexture* GetTexture();
 	float GetTimeScale();
 	bool IsPlay();
 	void Play();

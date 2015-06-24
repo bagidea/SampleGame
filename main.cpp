@@ -1,5 +1,6 @@
 #include "GameWindow.h"
 #include "GameObject.h"
+#include "GameTexture.h"
 
 #include <vector>
 
@@ -9,6 +10,8 @@ int screenHeight = 600;
 GameWindow* bis;
 GameObject* bg;
 GameObject* wall;
+GameObject* gameOver;
+
 GameObject* mc;
 
 SDL_Rect Clip[8];
@@ -33,7 +36,9 @@ struct position
 	int x, y;
 	position(int _x, int _y):x(_x), y(_y){}
 };
+
 vector<position*> tile;
+vector<GameObject*> coin;
 
 void GenMap()
 {
@@ -49,6 +54,22 @@ void GenMap()
 			}
 		}
 	}
+}
+
+void AddCoin(int x, int y)
+{
+	GameObject* ob = new GameObject(bis->GetRenderer());
+	ob->Load("source/Coin.png");
+	ob->LoadClip("source/Coin.animate");
+	ob->x = (x*100)+28;
+	ob->y = (y*100)+56;
+	ob->width = 44;
+	ob->height = 40;
+	ob->SetTimeScale(0.8);
+	ob->SetAnimation(0, 9);
+	ob->Play();
+
+	coin.push_back(ob);
 }
 
 void Start()
@@ -75,19 +96,35 @@ void Start()
 
 	GenMap();
 
+	AddCoin(1, 1);
+	AddCoin(2, 1);
+	AddCoin(5, 1);
+	AddCoin(6, 1);
+	AddCoin(1, 4);
+	AddCoin(2, 4);
+	AddCoin(5, 4);
+	AddCoin(6, 4);
+
 	mc = new GameObject(bis->GetRenderer());
 	mc->Load("source/SPplayer.png");
 
 	mc->LoadClip("source/SPplayer.animate");
 
-	mc->x = 150;
-	mc->y = 420;
+	mc->x = 350;
+	mc->y = 320;
 	mc->width = 50;
 	mc->height = 80;
 
 	mc->SetTimeScale(0.8);
 	mc->SetAnimation(0, 0);
 	mc->Play();
+
+	gameOver = new GameObject(bis->GetRenderer());
+	gameOver->Load("source/GameOver2.png");
+	gameOver->x = 150;
+	gameOver->y = 100;
+	gameOver->width = 500;
+	gameOver->height = 400;
 }
 
 bool CheckCollision(GameObject* ob, bool chk = false)
@@ -122,6 +159,8 @@ bool CheckCollision(GameObject* ob, bool chk = false)
 
 void Update()
 {
+	int i;
+
 	mY += gravity;
 
 	if(Kleft)
@@ -165,14 +204,32 @@ void Update()
 
 	bg->Render();
 
-	for(int i = 0; i < tile.size(); i++)
+	for(i = 0; i < tile.size(); i++)
 	{
 		wall->x = tile[i]->x;
 		wall->y = tile[i]->y;
 		wall->Render();
 	}
 
+	cout << coin.size() << endl;
+	for(i = 0; i < coin.size(); i++)
+	{
+		if(coin[i]->HitTest(mc))
+		{
+			delete coin[i];
+			coin[i] = NULL;
+			coin.erase(coin.begin()+i);
+		}else{
+			coin[i]->Render();
+		}
+	}
+
 	mc->Render();
+
+	if(coin.size() == 0)
+	{
+		gameOver->Render();
+	}
 }
 
 void Event()
@@ -217,18 +274,32 @@ void Event()
 
 void Close()
 {
+	int i;
+
 	delete bg;
 	bg = NULL;
 
-	for(int i = 0; i < tile.size(); i++)
+	for(i = 0; i < tile.size(); i++)
 	{
 		delete tile[i];
 		tile[i] = NULL;
 	}
+
 	tile.clear();
+
+	for(i = 0; i < coin.size(); i++)
+	{
+		delete coin[i];
+		coin[i] = NULL;
+	}
+
+	coin.clear();
 
 	delete mc;
 	mc = NULL;
+
+	delete gameOver;
+	gameOver = NULL;
 
 	delete bis;
 	bis = NULL;
