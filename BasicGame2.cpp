@@ -14,6 +14,9 @@ public:
 	Effect(SDL_Renderer* renderer);
 	~Effect();
 
+	int GetWidth();
+	int GetHeight();
+
 	void Render();
 	bool IsPlay();
 private:
@@ -52,10 +55,9 @@ void Effect::Render()
 	}
 }
 
-bool Effect::IsPlay()
-{
-	return gameObject->IsPlay();
-}
+bool Effect::IsPlay(){return gameObject->IsPlay();}
+int Effect::GetWidth(){return gameObject->width;}
+int Effect::GetHeight(){return gameObject->height;}
 
 int screenWidth = 800;
 int screenHeight = 600;
@@ -81,8 +83,8 @@ vector<Effect*> effList;
 void AddEffect(GameObject* ob)
 {
 	Effect* eff = new Effect(bis->GetRenderer());
-	eff->x = (ob->x+25)-150;
-	eff->y = (ob->y+25)-150;
+	eff->x = (ob->x+(ob->width/2))-(eff->GetWidth()/2);
+	eff->y = (ob->y+(ob->width/2))-(eff->GetHeight()/2);
 	effList.push_back(eff);
 }
 
@@ -107,26 +109,27 @@ void Start()
 	bg->height = 600;
 
 	player1 = new GameObject(bis->GetRenderer());
-	player1->Load("source/pongPlayer.png");
-	player1->x = 325;
-	player1->y = 20;
+	player1->Load("source/pongPlayer.jpg");
+	player1->SetFlip(SDL_FLIP_VERTICAL);
 	player1->width = 150;
 	player1->height = 30;
+	player1->x = (screenWidth/2)-(player1->width/2);
+	player1->y = screenHeight-20-player1->height;
 
 	player2 = new GameObject(bis->GetRenderer());
-	player2->Load("source/pongPlayer.png");
-	player2->x = 325;
-	player2->y = 550;
+	player2->Load("source/pongPlayer.jpg");
 	player2->width = 150;
 	player2->height = 30;
+	player2->x = (screenWidth/2)-(player2->width/2);
+	player2->y = 20;
 
 	ball = new GameObject(bis->GetRenderer());
 	ball->Load("source/Ball.png");
-	ball->x = 375;
-	ball->y = 275;
 	ball->width = 50;
 	ball->height = 50;
-	ball->SetCenter(25, 25);
+	ball->x = (screenWidth/2)-(ball->width/2);
+	ball->y = (screenHeight/2)-(ball->height/2);
+	ball->SetCenter(ball->width/2, ball->width/2);
 }
 
 void Update()
@@ -144,44 +147,57 @@ void Update()
 	{
 		player1->x = 0;
 	}
-	else if(player1->x >= 650)
+	else if(player1->x >= screenWidth-player1->width)
 	{
-		player1->x = 650;
+		player1->x = screenWidth-player1->width;
 	}
 
-	if(player2->x+75 > ball->x+25)
+	if(player2->x > ball->x-(ball->width/2) || player2->x+player2->width < ball->x+(ball->width/2))
 	{
-		player2->x -= speed;
-	}
-	else if(player2->x+75 < ball->x+25)
-	{
-		player2->x += speed;
+		if(player2->x+(player2->width/2) > ball->x+(ball->width/2))
+		{
+			player2->x -= speed;
+		}
+		else if(player2->x+(player2->width/2) < ball->x+(ball->width/2))
+		{
+			player2->x += speed;
+		}
 	}
 
 	if(player2->x <= 0)
 	{
 		player2->x = 0;
 	}
-	else if(player2->x >= 650)
+	else if(player2->x >= screenWidth-player2->width)
 	{
-		player2->x = 650;
+		player2->x = screenWidth-player2->width;
 	}
 
-	ball->rotation += mX;
+	ball->rotation += mX*2;
 	ball->x += mX;
 	ball->y += mY;
 
-	if(ball->x <= 0 || ball->x >= 750)
+	if(ball->x <= 0 || ball->x >= screenWidth-ball->width)
 	{
 		mX = -mX;
+		if(ball->x <= 0)
+			ball->x = 1;
+		else if(ball->x >= screenWidth-ball->width)
+			ball->x = screenWidth-ball->width-1;
+
+		AddEffect(ball);
 	}
 
 	if((chk && ball->HitTest(player1)) || (!chk && ball->HitTest(player2)))
 	{
-		if(!chk)
-			chk = true;
-		else
+		if(chk)
+		{
+			mX = ((ball->x+(ball->width/2))-(player1->x+(player1->width/2)))/8;
 			chk = false;
+		}else{
+			mX = ((ball->x+(ball->width/2))-(player2->x+(player2->width/2)))/8;
+			chk = true;
+		}
 
 		if(mY > 0)
 			mY++;
@@ -189,7 +205,6 @@ void Update()
 			mY--;
 
 		mY = -mY;	
-
 		AddEffect(ball);
 	}
 
@@ -197,41 +212,35 @@ void Update()
 	{
 		if(time(0)-tmr >= 2)
 		{
-			int ranX = rand() % 2;
 			int ranY = rand() % 2;
+			int ranX = (rand() % (speed*2)+1)-speed;
 
 			if(ranY == 0)
 			{
-				chk = false;
+				chk = true;
 				mY = speed/2;
 			}else{
-				chk = true;
+				chk = false;
 				mY = -speed/2;
 			}
 
-			if(ranX == 0)
-			{
-				mX = speed;
-			}else{
-				mX = -speed;
-			}
-
+			mX = ranX;
 			start = true;
 		}
 	}else{
-		if(ball->y < -50 || ball->y > 850)
+		if(ball->y < -ball->width || ball->y > screenWidth+ball->width)
 		{
 			start = false;
 			tmr = time(0);
 			mX = 0;
 			mY = 0;
-			ball->x = 375;
-			ball->y = 275;
+			ball->x = (screenWidth/2)-(ball->width/2);
+			ball->y = (screenHeight/2)-(ball->height/2);
 
-			player1->x = 325;
-			player1->y = 50;
-			player2->x = 325;
-			player2->y = 520;
+			player1->x = (screenWidth/2)-(player1->width/2);
+			player1->y = screenHeight-20-player1->height;
+			player2->x = (screenWidth/2)-(player2->width/2);
+			player2->y = 20;
 		}
 	}
 
