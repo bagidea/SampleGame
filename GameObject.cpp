@@ -25,7 +25,7 @@ GameObject::GameObject(SDL_Renderer* renderer)
 
 GameObject::~GameObject()
 {
-	//clipList.clear();
+	clipList.clear();
 
 	delete tex;
 	tex = NULL;
