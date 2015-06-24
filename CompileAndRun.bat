@@ -7,7 +7,7 @@ SET Library=-LC:\SDL\SDL2-2.0.3\lib -LC:\SDL\SDL2-2.0.3\i686-w64-mingw32\lib -LC
 SET Flag_Compile=-w -Wl,-subsystem,windows
 SET Flag_Library=-lmingw32 -lSDL2main -lSDL2 -lSDL2_image
 
-SET Source=main.cpp GameWindow.cpp GameTexture.cpp GameObject.cpp
+SET Source=main.cpp src/GameWindow.cpp src/GameTexture.cpp src/GameObject.cpp -Iinclude
 
 SET Debug=n
 SET /P Debug=You can show Debug (y): 

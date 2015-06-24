@@ -10,6 +10,7 @@ GameObject::GameObject(SDL_Renderer* renderer)
 	y = 0;
 	width = 0;
 	height = 0;
+	rotation = 0;
 
 	this->tex = new GameTexture();
 	this->renderer = NULL;
@@ -21,6 +22,7 @@ GameObject::GameObject(SDL_Renderer* renderer)
 	}
 
 	isPlay = false;
+	loop = true;
 }
 
 GameObject::~GameObject()
@@ -58,6 +60,8 @@ void GameObject::AddClip(SDL_Rect* clip)
 	{
 		clipList.push_back(clip[i]);
 	}
+
+	SetAnimation(0, clipList.size());
 }
 
 void GameObject::LoadClip(string path)
@@ -79,6 +83,13 @@ void GameObject::LoadClip(string path)
 			clipList.push_back(rect);
 		}
 	}
+
+	SetAnimation(0, clipList.size());
+}
+
+void GameObject::SetCenter(int x, int y)
+{
+	tex->SetCenter(x, y);
 }
 
 void GameObject::SetFrame(int index)
@@ -145,10 +156,10 @@ void GameObject::SetTimeScale(float tmr)
 	speedAnimation = 10 - (9 * timeScale);
 }
 
-void GameObject::SetClip(vector<SDL_Rect> _clip)
+void GameObject::SetClip(vector<SDL_Rect> clip)
 {
 	clipList.clear();
-	clipList = _clip;
+	clipList = clip;
 }
 
 vector<SDL_Rect> GameObject::GetClip()
@@ -162,6 +173,7 @@ void GameObject::Render()
 	tex->SetY(y);
 	tex->SetWidth(width);
 	tex->SetHeight(height);
+	tex->SetRotate(rotation);
 
 	if(clipList.size() > 0)
 	{
@@ -180,7 +192,10 @@ void GameObject::Render()
 
 				if(index/speedAnimation >= end)
 				{
-					index = start;
+					if(loop)
+						index = start;
+					else
+						Stop();
 				}
 			}
 		}
@@ -199,3 +214,8 @@ float GameObject::GetTimeScale(){return timeScale;}
 bool GameObject::IsPlay(){return isPlay;}
 void GameObject::Play(){isPlay = true;};
 void GameObject::Stop(){isPlay = false;};
+
+void GameObject::SetLoop(bool loop)
+{
+	this->loop = loop;
+}

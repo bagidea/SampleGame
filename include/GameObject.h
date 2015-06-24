@@ -16,7 +16,7 @@ using namespace std;
 class GameObject
 {
 public:
-	int x, y, width, height;
+	int x, y, width, height, rotation;
 
 	GameObject(SDL_Renderer* renderer = NULL);
 	~GameObject();
@@ -26,13 +26,14 @@ public:
 	void SetTexture(GameTexture* tex);
 	void AddClip(SDL_Rect* clip);
 	void LoadClip(string path);
+	void SetCenter(int x, int y);
 	void SetFrame(int index);
 	void SetAnimation(int start = 0, int end = 0);
 	void SetFlip(SDL_RendererFlip flip = SDL_FLIP_NONE);
 	bool HitTest(GameObject* hit);
 	void SetTimeScale(float tmr);
 
-	void SetClip(vector<SDL_Rect> _clip);
+	void SetClip(vector<SDL_Rect> clip);
 	vector<SDL_Rect> GetClip();
 
 	void Render();
@@ -43,10 +44,12 @@ public:
 	bool IsPlay();
 	void Play();
 	void Stop();
+	void SetLoop(bool loop);
 private:
 	float timeScale;
 	int speedAnimation;
 	bool isPlay;
+	bool loop;
 	int index;
 	int start, end;
 	vector<SDL_Rect> clipList;
