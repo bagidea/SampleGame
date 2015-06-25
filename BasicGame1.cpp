@@ -3,6 +3,79 @@
 
 #include <vector>
 
+class Monster
+{
+public:
+	bool gameStart;
+	bool dead;
+	int x, y, width, height;
+	int mX;
+
+	Monster(SDL_Renderer* renderer, GameSurface* surface);
+	~Monster();
+
+	void Render();
+	void Flip(int flip);
+	bool HitTest(GameObject* hit);
+private:
+	GameObject* gameObject;
+};
+
+Monster::Monster(SDL_Renderer* renderer, GameSurface* surface)
+{
+	gameStart = true;
+
+	x = 0;
+	y = 0;
+	mX = 3;
+	dead = false;
+
+	gameObject = new GameObject(renderer);
+	gameObject->CreateGameTextureFromGameSurface(surface);
+
+	gameObject->GenerateClip(2, 4);
+	gameObject->SetTimeScale(0.7);
+	gameObject->Play();
+
+	width = 100;
+	height = 70;
+
+	gameObject->width = width;
+	gameObject->height = height;
+}
+
+Monster::~Monster()
+{
+	delete gameObject;
+	gameObject = NULL;
+}
+
+void Monster::Render()
+{
+	if(!gameStart)
+		gameObject->Stop();
+
+	gameObject->x = x;
+	gameObject->y = y;
+
+	gameObject->Render();
+}
+
+void Monster::Flip(int flip)
+{
+	if(flip == 0)
+		gameObject->SetFlip(FLIP_HORIZONTAL);
+	else if(flip == 1)
+		gameObject->SetFlip(FLIP_NONE);
+}
+
+bool Monster::HitTest(GameObject* hit)
+{
+	return gameObject->HitTest(hit);
+}
+
+GameSurface* catSurface;
+
 int screenWidth = 800;
 int screenHeight = 600;
 
@@ -15,7 +88,7 @@ GameObject* mc;
 
 GameSurface* coinSurface;
 
-SDL_Rect Clip[8];
+vector<Monster*> monList;
 
 int gravity;
 int speed;
@@ -23,6 +96,7 @@ bool jump;
 int mX, mY;
 bool kspace, Kleft, Kright;
 
+bool startGame;
 bool end;
 
 int Map[6][8] = {
@@ -78,7 +152,15 @@ void AddCoin(int x, int y)
 	coin.push_back(ob);
 }
 
-void Start()
+void AddMonster(int x, int y)
+{
+	Monster* mon = new Monster(bis->GetRenderer(), catSurface);
+	mon->x = x*wall->width;
+	mon->y = (y*wall->height)+(wall->height-mon->height);;
+	monList.push_back(mon);
+}
+
+void GameSetup()
 {
 	end = false;
 
@@ -132,12 +214,24 @@ void Start()
 	mc->SetAnimation(0, 0);
 	mc->Play();
 
+	catSurface = new GameSurface();
+	catSurface->Load("source/Cat.png");
+
+	AddMonster(2, 1);
+	AddMonster(3, 4);
+
 	gameOver = new GameObject(bis->GetRenderer());
 	gameOver->Load("source/GameOver2.png");
 	gameOver->x = 150;
 	gameOver->y = 100;
 	gameOver->width = 500;
 	gameOver->height = 400;
+}
+
+void Start()
+{
+	GameSetup();
+	startGame = true;
 }
 
 bool CheckCollision(GameObject* ob, bool chk = false)
@@ -172,82 +266,174 @@ bool CheckCollision(GameObject* ob, bool chk = false)
 
 void Update()
 {
+	if(startGame)
+	{
+		int i;
+
+		mY += gravity;
+
+		if(!end)
+		{
+			if(Kleft)
+			{
+				mX = -speed;
+				mc->SetFlip(FLIP_HORIZONTAL);
+			}
+			else if(Kright)
+			{
+				mX = speed;
+				mc->SetFlip(FLIP_NONE);
+			}
+			else if(!Kleft && !Kright)
+			{
+				mX = 0;
+			}
+
+			if(!jump)
+			{
+				if(!Kleft && !Kright)
+				{
+					mc->SetAnimation(0, 0);
+				}else{
+					if(mc->GetStart() != 1 && mc->GetEnd() != 7)
+						mc->SetAnimation(1, 7);
+				}
+			}else{
+				mc->SetAnimation(2, 2);
+			}
+
+			mc->y += mY;
+			if(mc->y <= 0 || mc->y >= screenHeight-mc->height || CheckCollision(mc, true))
+			{
+				mc->y -= mY;
+			}
+
+			mc->x += mX;
+			if(mc->x <= 0 || mc->x >= screenWidth-mc->width || CheckCollision(mc))
+			{
+				mc->x -= mX;
+			}
+		}
+
+		bg->Render();
+
+		for(i = 0; i < tile.size(); i++)
+		{
+			wall->x = tile[i]->x;
+			wall->y = tile[i]->y;
+			wall->Render();
+		}
+
+		for(i = 0; i < coin.size(); i++)
+		{
+			if(coin[i]->HitTest(mc))
+			{
+				delete coin[i];
+				coin[i] = NULL;
+				coin.erase(coin.begin()+i);
+			}else{
+				if(end)
+					coin[i]->Stop();
+
+				coin[i]->Render();
+			}
+		}
+
+		for(i = 0; i < monList.size(); i++)
+		{
+			monList[i]->gameStart = !end;
+
+			if(!end)
+				monList[i]->x += monList[i]->mX;
+
+			if(monList[i]->mX > 0)
+			{	
+				if((Map[(monList[i]->y+monList[i]->height-1)/wall->height][(monList[i]->x+monList[i]->width-1)/wall->width] == 0 && Map[((monList[i]->y+monList[i]->height-1)/wall->height)+1][(monList[i]->x+monList[i]->width-1)/wall->width] == 0) || Map[(monList[i]->y+monList[i]->height-1)/wall->height][(monList[i]->x+monList[i]->width-1)/wall->width] == 1)
+				{
+					monList[i]->mX = -monList[i]->mX;
+					monList[i]->Flip(0);
+				}
+			}
+			else if(monList[i]->mX < 0)
+			{	
+				if((Map[(monList[i]->y+monList[i]->height-1)/wall->height][monList[i]->x/wall->width] == 0 && Map[((monList[i]->y+monList[i]->height-1)/wall->height)+1][monList[i]->x/wall->width] == 0) || Map[(monList[i]->y+monList[i]->height-1)/wall->height][monList[i]->x/wall->width] == 1)
+				{
+					monList[i]->mX = -monList[i]->mX;
+					monList[i]->Flip(1);
+				}
+			}
+
+			monList[i]->Render();
+
+			if(monList[i]->HitTest(mc))
+			{
+				if(monList[i]->y+(monList[i]->height/2) < mc->y+mc->height)
+				{
+					end = true;
+					mc->Stop();
+				}else{
+					delete monList[i];
+					monList[i] = NULL;
+					monList.erase(monList.begin()+i);
+				}
+			}
+		}
+
+		mc->Render();
+
+		if(coin.size() == 0)
+		{
+			end = true;
+			mc->Stop();
+		}
+
+		if(end)
+			gameOver->Render();
+	}
+}
+
+void GameClear()
+{
 	int i;
 
-	mY += gravity;
-
-	if(!end)
-	{
-		if(Kleft)
-		{
-			mX = -speed;
-			mc->SetFlip(FLIP_HORIZONTAL);
-		}
-		else if(Kright)
-		{
-			mX = speed;
-			mc->SetFlip(FLIP_NONE);
-		}
-		else if(!Kleft && !Kright)
-		{
-			mX = 0;
-		}
-
-		if(!jump)
-		{
-			if(!Kleft && !Kright)
-			{
-				mc->SetAnimation(0, 0);
-			}else{
-				if(mc->GetStart() != 1 && mc->GetEnd() != 7)
-					mc->SetAnimation(1, 7);
-			}
-		}else{
-			mc->SetAnimation(2, 2);
-		}
-
-		mc->y += mY;
-		if(mc->y <= 0 || mc->y >= screenHeight-mc->height || CheckCollision(mc, true))
-		{
-			mc->y -= mY;
-		}
-
-		mc->x += mX;
-		if(mc->x <= 0 || mc->x >= screenWidth-mc->width || CheckCollision(mc))
-		{
-			mc->x -= mX;
-		}
-	}
-
-	bg->Render();
+	delete bg;
+	bg = NULL;
 
 	for(i = 0; i < tile.size(); i++)
 	{
-		wall->x = tile[i]->x;
-		wall->y = tile[i]->y;
-		wall->Render();
+		delete tile[i];
+		tile[i] = NULL;
 	}
+
+	tile.clear();
 
 	for(i = 0; i < coin.size(); i++)
 	{
-		if(coin[i]->HitTest(mc))
-		{
-			delete coin[i];
-			coin[i] = NULL;
-			coin.erase(coin.begin()+i);
-		}else{
-			coin[i]->Render();
-		}
+		delete coin[i];
+		coin[i] = NULL;
 	}
 
-	mc->Render();
+	coin.clear();
 
-	if(coin.size() == 0)
+	delete coinSurface;
+	coinSurface = NULL;
+
+	delete mc;
+	mc = NULL;
+
+	for(i = 0; i < monList.size(); i++)
 	{
-		gameOver->Render();
-		end = true;
-		mc->Stop();
+		delete monList[i];
+		monList[i] = NULL;
 	}
+
+	monList.clear();
+
+	delete catSurface;
+	catSurface = NULL;
+
+	delete gameOver;
+	gameOver = NULL;
 }
 
 void Event()
@@ -257,11 +443,17 @@ void Event()
 	case SDL_KEYDOWN:
 		if(bis->GetEvent().key.keysym.sym == SDLK_SPACE)
 		{
-			if(!kspace && !jump)
+			if(!end)
 			{
-				mY = -50;
-				jump = true;
-				kspace = true;
+				if(!kspace && !jump)
+				{
+					mY = -50;
+					jump = true;
+					kspace = true;
+				}
+			}else{
+				GameClear();
+				GameSetup();
 			}
 		}
 		else if(bis->GetEvent().key.keysym.sym == SDLK_LEFT)
@@ -297,35 +489,7 @@ void Event()
 
 void Close()
 {
-	int i;
-
-	delete bg;
-	bg = NULL;
-
-	for(i = 0; i < tile.size(); i++)
-	{
-		delete tile[i];
-		tile[i] = NULL;
-	}
-
-	tile.clear();
-
-	for(i = 0; i < coin.size(); i++)
-	{
-		delete coin[i];
-		coin[i] = NULL;
-	}
-
-	coin.clear();
-
-	delete coinSurface;
-	coinSurface = NULL;
-
-	delete mc;
-	mc = NULL;
-
-	delete gameOver;
-	gameOver = NULL;
+	GameClear();
 
 	delete bis;
 	bis = NULL;
