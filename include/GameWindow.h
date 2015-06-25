@@ -8,6 +8,7 @@
 
 using namespace std;
 
+//GameWindow Class
 class GameWindow
 {
 public:

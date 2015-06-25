@@ -1,5 +1,6 @@
 #include "GameWindow.h"
 
+//GameWindow Class
 GameWindow::GameWindow()
 {
 	quit = false;

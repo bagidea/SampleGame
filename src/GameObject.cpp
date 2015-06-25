@@ -1,5 +1,6 @@
 #include "GameObject.h"
 
+//GameObject Class
 GameObject::GameObject(SDL_Renderer* renderer)
 {
 	timeScale = 1.0;
@@ -52,6 +53,34 @@ void GameObject::Load(string path)
 void GameObject::SetTexture(GameTexture* tex)
 {
 	this->tex = tex;
+}
+
+bool GameObject::CreateGameTextureFromGameSurface(GameSurface* gameSurface)
+{
+	bool success = true;
+
+	if(gameSurface != NULL || gameSurface->GetSurface() != NULL)
+	{
+		SDL_Texture* gTex = SDL_CreateTextureFromSurface(renderer, gameSurface->GetSurface());
+		if(gTex == NULL)
+		{
+			success = false;
+			cerr << "SDL Create Texture Error : " << SDL_GetError() << endl;
+		}
+
+		width = gameSurface->GetSurface()->w;
+		height = gameSurface->GetSurface()->h;
+
+		tex->SetWidth(width);
+		tex->SetHeight(height);
+		tex->SetClip(0, 0, width, height);
+		tex->SetTexture(gTex);
+	}else{
+		success = false;
+		cerr << "Create Error - GameSurface" << endl;
+	}
+
+	return success;
 }
 
 void GameObject::AddClip(SDL_Rect* clip)

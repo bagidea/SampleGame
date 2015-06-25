@@ -11,7 +11,7 @@ public:
 	int x;
 	int y;
 
-	Effect(SDL_Renderer* renderer);
+	Effect(SDL_Renderer* renderer, GameSurface* gameSurface);
 	~Effect();
 
 	int GetWidth();
@@ -23,15 +23,15 @@ private:
 	GameObject* gameObject;
 };
 
-Effect::Effect(SDL_Renderer* renderer)
+Effect::Effect(SDL_Renderer* renderer, GameSurface* gameSurface)
 {	
 	end = false;
 	x = 0;
 	y = 0;
 
 	gameObject = new GameObject(renderer);
-	gameObject->Load("source/Effect.png");
-	gameObject->LoadClip("source/Effect.animate");
+	gameObject->CreateGameTextureFromGameSurface(gameSurface);
+	gameObject->GenerateClip(5, 4);
 	gameObject->SetLoop(false);
 	gameObject->width = 300;
 	gameObject->height = 300;
@@ -65,6 +65,9 @@ int screenHeight = 600;
 GameWindow* bis;
 GameObject* bg;
 
+GameSurface* playerSurface;
+GameSurface* effectSurface;
+
 GameObject* player1;
 GameObject* player2;
 GameObject* ball;
@@ -82,7 +85,7 @@ vector<Effect*> effList;
 
 void AddEffect(GameObject* ob)
 {
-	Effect* eff = new Effect(bis->GetRenderer());
+	Effect* eff = new Effect(bis->GetRenderer(), effectSurface);
 	eff->x = (ob->x+(ob->width/2))-(eff->GetWidth()/2);
 	eff->y = (ob->y+(ob->width/2))-(eff->GetHeight()/2);
 	effList.push_back(eff);
@@ -108,16 +111,19 @@ void Start()
 	bg->width = 800;
 	bg->height = 600;
 
+	playerSurface = new GameSurface();
+	playerSurface->Load("source/pongPlayer.jpg");
+
 	player1 = new GameObject(bis->GetRenderer());
-	player1->Load("source/pongPlayer.jpg");
-	player1->SetFlip(SDL_FLIP_VERTICAL);
+	player1->CreateGameTextureFromGameSurface(playerSurface);
+	player1->SetFlip(FLIP_VERTICAL);
 	player1->width = 150;
 	player1->height = 30;
 	player1->x = (screenWidth/2)-(player1->width/2);
 	player1->y = screenHeight-20-player1->height;
 
 	player2 = new GameObject(bis->GetRenderer());
-	player2->Load("source/pongPlayer.jpg");
+	player2->CreateGameTextureFromGameSurface(playerSurface);
 	player2->width = 150;
 	player2->height = 30;
 	player2->x = (screenWidth/2)-(player2->width/2);
@@ -130,6 +136,9 @@ void Start()
 	ball->x = (screenWidth/2)-(ball->width/2);
 	ball->y = (screenHeight/2)-(ball->height/2);
 	ball->SetCenter(ball->width/2, ball->width/2);
+
+	effectSurface = new GameSurface();
+	effectSurface->Load("source/Effect.png");
 }
 
 void Update()
@@ -298,6 +307,24 @@ void Close()
 	}
 
 	effList.clear();
+
+	delete player1;
+	player1 = NULL;
+
+	delete player2;
+	player2 = NULL;
+
+	delete playerSurface;
+	playerSurface = NULL;
+
+	delete bg;
+	bg = NULL;
+
+	delete ball;
+	ball = NULL;
+
+	delete effectSurface;
+	effectSurface = NULL;
 
 	delete bis;
 	bis = NULL;

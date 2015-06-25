@@ -1,5 +1,6 @@
 #include "GameTexture.h"
 
+//GameTexture Class
 GameTexture::GameTexture()
 {
 	tex = NULL;
@@ -33,7 +34,7 @@ bool GameTexture::Load(string path)
 	if(img == NULL)
 	{
 		success = false;
-		cerr << "IMG load Error : " << IMG_GetError() << endl;
+		cerr << "IMG load Error [" << path << "]: " << IMG_GetError() << endl;
 	}else{
 		width = img->w;
 		height = img->h;
@@ -92,3 +93,31 @@ void GameTexture::Render()
 	SDL_Rect quad = {x, y, width, height};
 	SDL_RenderCopyEx(renderer, tex, &clip, &quad, rotation, &center, flip);
 }
+
+//GameSurface Class
+GameSurface::GameSurface()
+{
+	surface = NULL;
+}
+
+GameSurface::~GameSurface()
+{
+	if(surface != NULL)
+		SDL_FreeSurface(surface);
+
+	surface = NULL;
+}
+
+bool GameSurface::Load(string path)
+{
+	surface = IMG_Load(path.c_str());
+	if(surface == NULL)
+	{
+		cerr << "IMG load Error [" << path << "]: " << IMG_GetError() << endl;
+		return false;
+	}
+
+	return true;
+}
+
+SDL_Surface* GameSurface::GetSurface(){return surface;}

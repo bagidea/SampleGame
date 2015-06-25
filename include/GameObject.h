@@ -11,8 +11,13 @@
 
 #include "GameTexture.h"
 
+#define FLIP_NONE SDL_FLIP_NONE
+#define FLIP_HORIZONTAL SDL_FLIP_HORIZONTAL
+#define FLIP_VERTICAL SDL_FLIP_VERTICAL
+
 using namespace std;
 
+//GameObject Class
 class GameObject
 {
 public:
@@ -24,6 +29,7 @@ public:
 	void SetRenderer(SDL_Renderer* renderer);
 	void Load(string path);
 	void SetTexture(GameTexture* tex);
+	bool CreateGameTextureFromGameSurface(GameSurface* gameSurface);
 	void AddClip(SDL_Rect* clip);
 	void LoadClip(string path);
 	void GenerateClip(int cols, int rows);

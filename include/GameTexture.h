@@ -8,6 +8,7 @@
 
 using namespace std;
 
+//GameTexture Class
 class GameTexture
 {
 public:
@@ -43,6 +44,19 @@ private:
 	double rotation;
 	SDL_Point center;
 	SDL_RendererFlip flip;
+};
+
+//GameSurface Class
+class GameSurface
+{
+public:
+	GameSurface();
+	~GameSurface();
+
+	bool Load(string path);
+	SDL_Surface* GetSurface();
+private:
+	SDL_Surface* surface;
 };
 
 #endif

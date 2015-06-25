@@ -13,6 +13,8 @@ GameObject* gameOver;
 
 GameObject* mc;
 
+GameSurface* coinSurface;
+
 SDL_Rect Clip[8];
 
 int gravity;
@@ -26,9 +28,9 @@ bool end;
 int Map[6][8] = {
 	1, 1, 1, 1, 1, 1, 1, 1,
 	1, 0, 0, 0, 0, 0, 0, 1,
+	1, 0, 1, 1, 1, 0, 0, 1,
+	1, 0, 0, 0, 0, 0, 1, 1,
 	1, 1, 1, 0, 0, 1, 1, 1,
-	1, 0, 0, 0, 0, 0, 0, 1,
-	1, 0, 0, 1, 1, 0, 0, 1,
 	1, 1, 1, 1, 1, 1, 1, 1
 };
 
@@ -60,7 +62,7 @@ void GenMap()
 void AddCoin(int x, int y)
 {
 	GameObject* ob = new GameObject(bis->GetRenderer());
-	ob->Load("source/Coin.png");
+	ob->CreateGameTextureFromGameSurface(coinSurface);
 	
 	//ob->LoadClip("source/Coin.animate");
 	ob->GenerateClip(10, 1);
@@ -102,14 +104,17 @@ void Start()
 
 	GenMap();
 
-	AddCoin(1, 1);
+	coinSurface = new GameSurface();
+	coinSurface->Load("source/Coin.png");
+
 	AddCoin(2, 1);
-	AddCoin(5, 1);
-	AddCoin(6, 1);
-	AddCoin(1, 4);
-	AddCoin(2, 4);
-	AddCoin(5, 4);
-	AddCoin(6, 4);
+	AddCoin(3, 1);
+	AddCoin(4, 1);
+	AddCoin(1, 3);
+	AddCoin(2, 3);
+	AddCoin(3, 4);
+	AddCoin(4, 4);
+	AddCoin(5, 3);
 
 	mc = new GameObject(bis->GetRenderer());
 	mc->Load("source/SPplayer.png");
@@ -117,11 +122,12 @@ void Start()
 	//mc->LoadClip("source/SPplayer.animate");
 	mc->GenerateClip(8, 1);
 
-	mc->x = 350;
-	mc->y = 320;
 	mc->width = 50;
 	mc->height = 80;
+	mc->x = wall->width*6;
+	mc->y = wall->height*2;
 
+	mc->SetFlip(FLIP_HORIZONTAL);
 	mc->SetTimeScale(0.8);
 	mc->SetAnimation(0, 0);
 	mc->Play();
@@ -175,12 +181,12 @@ void Update()
 		if(Kleft)
 		{
 			mX = -speed;
-			mc->SetFlip(SDL_FLIP_HORIZONTAL);
+			mc->SetFlip(FLIP_HORIZONTAL);
 		}
 		else if(Kright)
 		{
 			mX = speed;
-			mc->SetFlip(SDL_FLIP_NONE);
+			mc->SetFlip(FLIP_NONE);
 		}
 		else if(!Kleft && !Kright)
 		{
@@ -311,6 +317,9 @@ void Close()
 	}
 
 	coin.clear();
+
+	delete coinSurface;
+	coinSurface = NULL;
 
 	delete mc;
 	mc = NULL;
