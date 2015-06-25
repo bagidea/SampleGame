@@ -61,7 +61,10 @@ void AddCoin(int x, int y)
 {
 	GameObject* ob = new GameObject(bis->GetRenderer());
 	ob->Load("source/Coin.png");
-	ob->LoadClip("source/Coin.animate");
+	
+	//ob->LoadClip("source/Coin.animate");
+	ob->GenerateClip(10, 1);
+
 	ob->width = 44;
 	ob->height = 40;
 	ob->x = (x*wall->width)+(ob->width/2);
@@ -111,7 +114,8 @@ void Start()
 	mc = new GameObject(bis->GetRenderer());
 	mc->Load("source/SPplayer.png");
 
-	mc->LoadClip("source/SPplayer.animate");
+	//mc->LoadClip("source/SPplayer.animate");
+	mc->GenerateClip(8, 1);
 
 	mc->x = 350;
 	mc->y = 320;

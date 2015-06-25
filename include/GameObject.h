@@ -26,6 +26,7 @@ public:
 	void SetTexture(GameTexture* tex);
 	void AddClip(SDL_Rect* clip);
 	void LoadClip(string path);
+	void GenerateClip(int cols, int rows);
 	void SetCenter(int x, int y);
 	void SetFrame(int index);
 	void SetAnimation(int start = 0, int end = 0);

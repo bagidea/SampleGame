@@ -87,6 +87,23 @@ void GameObject::LoadClip(string path)
 	SetAnimation(0, clipList.size());
 }
 
+void GameObject::GenerateClip(int cols, int rows)
+{
+	int cW = width/cols;
+	int cH = height/rows;
+
+	for(int i = 0; i < rows; i++)
+	{
+		for(int a = 0; a < cols; a++)
+		{
+			SDL_Rect rect = {a*cW, i*cH, cW, cH};
+			clipList.push_back(rect);
+		}
+	}
+
+	SetAnimation(0, clipList.size());
+}
+
 void GameObject::SetCenter(int x, int y)
 {
 	tex->SetCenter(x, y);
