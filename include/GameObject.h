@@ -44,6 +44,8 @@ public:
 	bool IsPlay();
 	void Play();
 	void Stop();
+	int GetStart();
+	int GetEnd();
 	void SetLoop(bool loop);
 private:
 	float timeScale;

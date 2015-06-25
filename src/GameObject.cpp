@@ -101,6 +101,7 @@ void GameObject::SetAnimation(int start, int end)
 {
 	this->start = start;
 	this->end = end;
+	index = this->start*speedAnimation;
 }
 
 void GameObject::SetFlip(SDL_RendererFlip flip)
@@ -193,7 +194,7 @@ void GameObject::Render()
 				if(index/speedAnimation >= end)
 				{
 					if(loop)
-						index = start;
+						index = start*speedAnimation;
 					else
 						Stop();
 				}
@@ -214,6 +215,8 @@ float GameObject::GetTimeScale(){return timeScale;}
 bool GameObject::IsPlay(){return isPlay;}
 void GameObject::Play(){isPlay = true;};
 void GameObject::Stop(){isPlay = false;};
+int GameObject::GetStart(){return start;}
+int GameObject::GetEnd(){return end;}
 
 void GameObject::SetLoop(bool loop)
 {

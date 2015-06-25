@@ -21,6 +21,8 @@ bool jump;
 int mX, mY;
 bool kspace, Kleft, Kright;
 
+bool end;
+
 int Map[6][8] = {
 	1, 1, 1, 1, 1, 1, 1, 1,
 	1, 0, 0, 0, 0, 0, 0, 1,
@@ -49,7 +51,7 @@ void GenMap()
 		{
 			if(Map[i][a] == 1)
 			{
-				tile.push_back(new position(a*100, i*100));
+				tile.push_back(new position(a*wall->width, i*wall->height));
 			}
 		}
 	}
@@ -60,10 +62,10 @@ void AddCoin(int x, int y)
 	GameObject* ob = new GameObject(bis->GetRenderer());
 	ob->Load("source/Coin.png");
 	ob->LoadClip("source/Coin.animate");
-	ob->x = (x*100)+28;
-	ob->y = (y*100)+56;
 	ob->width = 44;
 	ob->height = 40;
+	ob->x = (x*wall->width)+(ob->width/2);
+	ob->y = (y*wall->height)+(wall->height-ob->height);
 	ob->SetTimeScale(0.8);
 	ob->SetAnimation(0, 9);
 	ob->Play();
@@ -73,6 +75,8 @@ void AddCoin(int x, int y)
 
 void Start()
 {
+	end = false;
+
 	mX = 0;
 	mY = 0;
 
@@ -128,10 +132,10 @@ void Start()
 
 bool CheckCollision(GameObject* ob, bool chk = false)
 {
-	int topLeft = Map[ob->y/100][ob->x/100];
-	int topRight = Map[ob->y/100][(ob->x+ob->width-1)/100];
-	int bottomLeft = Map[(ob->y+ob->height-1)/100][ob->x/100];
-	int bottomRight = Map[(ob->y+ob->height-1)/100][(ob->x+ob->width-1)/100];
+	int topLeft = Map[ob->y/wall->height][ob->x/wall->width];
+	int topRight = Map[ob->y/wall->height][(ob->x+ob->width-1)/wall->width];
+	int bottomLeft = Map[(ob->y+ob->height-1)/wall->height][ob->x/wall->width];
+	int bottomRight = Map[(ob->y+ob->height-1)/wall->height][(ob->x+ob->width-1)/wall->width];
 
 	if(topLeft == 1 || topRight == 1 || bottomLeft == 1 || bottomRight == 1)
 	{
@@ -139,14 +143,14 @@ bool CheckCollision(GameObject* ob, bool chk = false)
 		{
 			if(topLeft == 1 || topRight == 1)
 			{
-				ob->y = ((ob->y/100)*100)+100;
+				ob->y = ((ob->y/wall->height)*wall->height)+wall->height;
 				mY = 0;
 			}
 			
 			if(bottomLeft == 1 || bottomRight == 1)
 			{
 				mY = 0;
-				ob->y = (((ob->y+ob->height-1)/100)*100)-ob->height;
+				ob->y = (((ob->y+ob->height-1)/wall->height)*wall->height)-ob->height;
 				jump = false;
 			}
 		}
@@ -162,43 +166,47 @@ void Update()
 
 	mY += gravity;
 
-	if(Kleft)
+	if(!end)
 	{
-		mX = -speed;
-		mc->SetFlip(SDL_FLIP_HORIZONTAL);
-	}
-	else if(Kright)
-	{
-		mX = speed;
-		mc->SetFlip(SDL_FLIP_NONE);
-	}
-	else if(!Kleft && !Kright)
-	{
-		mX = 0;
-	}
-
-	if(!jump)
-	{
-		if(!Kleft && !Kright)
+		if(Kleft)
 		{
-			mc->SetAnimation(0, 0);
-		}else{
-			mc->SetAnimation(1, 7);
+			mX = -speed;
+			mc->SetFlip(SDL_FLIP_HORIZONTAL);
 		}
-	}else{
-		mc->SetAnimation(2, 2);
-	}
+		else if(Kright)
+		{
+			mX = speed;
+			mc->SetFlip(SDL_FLIP_NONE);
+		}
+		else if(!Kleft && !Kright)
+		{
+			mX = 0;
+		}
 
-	mc->y += mY;
-	if(mc->y <= 0 || mc->y >= screenHeight-mc->height || CheckCollision(mc, true))
-	{
-		mc->y -= mY;
-	}
+		if(!jump)
+		{
+			if(!Kleft && !Kright)
+			{
+				mc->SetAnimation(0, 0);
+			}else{
+				if(mc->GetStart() != 1 && mc->GetEnd() != 7)
+					mc->SetAnimation(1, 7);
+			}
+		}else{
+			mc->SetAnimation(2, 2);
+		}
 
-	mc->x += mX;
-	if(mc->x <= 0 || mc->x >= screenWidth-mc->width || CheckCollision(mc))
-	{
-		mc->x -= mX;
+		mc->y += mY;
+		if(mc->y <= 0 || mc->y >= screenHeight-mc->height || CheckCollision(mc, true))
+		{
+			mc->y -= mY;
+		}
+
+		mc->x += mX;
+		if(mc->x <= 0 || mc->x >= screenWidth-mc->width || CheckCollision(mc))
+		{
+			mc->x -= mX;
+		}
 	}
 
 	bg->Render();
@@ -210,7 +218,6 @@ void Update()
 		wall->Render();
 	}
 
-	cout << coin.size() << endl;
 	for(i = 0; i < coin.size(); i++)
 	{
 		if(coin[i]->HitTest(mc))
@@ -228,6 +235,8 @@ void Update()
 	if(coin.size() == 0)
 	{
 		gameOver->Render();
+		end = true;
+		mc->Stop();
 	}
 }
 
@@ -252,6 +261,11 @@ void Event()
 		else if(bis->GetEvent().key.keysym.sym == SDLK_RIGHT)
 		{
 			Kright = true;
+		}
+		else if(bis->GetEvent().key.keysym.sym == SDLK_RETURN)
+		{
+			if(end)
+				bis->Quit();
 		}
 		break;
 	case SDL_KEYUP:
