@@ -3,6 +3,61 @@
 
 #include <vector>
 
+class Effect
+{
+public:
+	bool end;
+	int x;
+	int y;
+
+	Effect(SDL_Renderer* renderer, GameSurface* gameSurface);
+	~Effect();
+
+	int GetWidth();
+	int GetHeight();
+
+	void Render();
+	bool IsPlay();
+private:
+	GameObject* gameObject;
+};
+
+Effect::Effect(SDL_Renderer* renderer, GameSurface* gameSurface)
+{	
+	end = false;
+	x = 0;
+	y = 0;
+
+	gameObject = new GameObject(renderer);
+	gameObject->CreateGameTextureFromGameSurface(gameSurface);
+	gameObject->GenerateClip(5, 4);
+	gameObject->SetLoop(false);
+	gameObject->width = 300;
+	gameObject->height = 300;
+	gameObject->Play();
+}
+
+Effect::~Effect()
+{
+	delete gameObject;
+	gameObject = NULL;
+}
+
+void Effect::Render()
+{
+	gameObject->x = x;
+	gameObject->y = y;
+	gameObject->Render();
+	if(!gameObject->IsPlay())
+	{
+		end = true;
+	}
+}
+
+bool Effect::IsPlay(){return gameObject->IsPlay();}
+int Effect::GetWidth(){return gameObject->width;}
+int Effect::GetHeight(){return gameObject->height;}
+
 class Monster
 {
 public:
@@ -92,6 +147,9 @@ GameObject* bg;
 GameObject* wall;
 GameObject* gameOver;
 
+GameSurface* effectSurface;
+vector<Effect*> effList;
+
 GameObject* mc;
 
 GameSurface* coinSurface;
@@ -168,6 +226,14 @@ void AddMonster(int x, int y)
 	monList.push_back(mon);
 }
 
+void AddEffect(GameObject* ob)
+{
+	Effect* eff = new Effect(bis->GetRenderer(), effectSurface);
+	eff->x = (ob->x+(ob->width/2))-(eff->GetWidth()/2);
+	eff->y = (ob->y+ob->width)-(eff->GetHeight()/2);
+	effList.push_back(eff);
+}
+
 void GameSetup()
 {
 	end = false;
@@ -234,6 +300,9 @@ void GameSetup()
 	gameOver->y = 100;
 	gameOver->width = 500;
 	gameOver->height = 400;
+
+	effectSurface = new GameSurface();
+	effectSurface->Load("source/Effect.png");
 }
 
 void Start()
@@ -393,6 +462,7 @@ void Update()
 					}else{
 						monList[i]->dead = true;
 						mY = -20;
+						AddEffect(mc);
 					}
 				}
 			}else{
@@ -411,6 +481,18 @@ void Update()
 		{
 			end = true;
 			mc->Stop();
+		}
+
+		for(i = 0; i < effList.size(); i++)
+		{
+			if(effList[i]->IsPlay())
+			{
+				effList[i]->Render();
+			}else{
+				delete effList[i];
+				effList[i] = NULL;
+				effList.erase(effList.begin()+i);
+			}
 		}
 
 		if(end)
@@ -457,6 +539,17 @@ void GameClear()
 
 	delete catSurface;
 	catSurface = NULL;
+
+	for(i = 0; i < effList.size(); i++)
+	{
+		delete effList[i];
+		effList[i] = NULL;
+	}
+
+	effList.clear();
+
+	delete effectSurface;
+	effectSurface = NULL;
 
 	delete gameOver;
 	gameOver = NULL;
