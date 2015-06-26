@@ -45,6 +45,12 @@ bool GameWindow::CreateWindow(string title, int windowWidth, int windowHeight)
 					success = false;
 					cerr << "IMG Init Error : " << IMG_GetError() << endl;
 				}
+
+				if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2028) < 0)
+				{
+					success = false;
+					cerr << "MIX Init Error : " << Mix_GetError() << endl;
+				}
 			}
 		}
 	}
@@ -116,10 +122,12 @@ SDL_Event GameWindow::GetEvent()
 
 void GameWindow::Close()
 {
-	SDL_DestroyRenderer(renderer);
+	if(renderer != NULL)
+		SDL_DestroyRenderer(renderer);
 	renderer = NULL;
 
-	SDL_DestroyWindow(window);
+	if(window != NULL)
+		SDL_DestroyWindow(window);
 	window = NULL;
 
 	SDL_Quit();

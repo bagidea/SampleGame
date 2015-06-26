@@ -16,7 +16,8 @@ GameTexture::GameTexture()
 
 GameTexture::~GameTexture()
 {
-	SDL_DestroyTexture(tex);
+	if(tex != NULL)
+		SDL_DestroyTexture(tex);
 	tex = NULL;
 }
 

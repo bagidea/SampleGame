@@ -222,7 +222,7 @@ void AddMonster(int x, int y)
 {
 	Monster* mon = new Monster(bis->GetRenderer(), catSurface);
 	mon->x = x*wall->width;
-	mon->y = (y*wall->height)+(wall->height-mon->height);;
+	mon->y = (y*wall->height)+(wall->height-mon->height);
 	monList.push_back(mon);
 }
 

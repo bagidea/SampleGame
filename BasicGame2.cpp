@@ -3,6 +3,7 @@
 
 #include "GameWindow.h"
 #include "GameObject.h"
+#include "GameAudio.h"
 
 class Effect
 {
@@ -72,6 +73,9 @@ GameObject* player1;
 GameObject* player2;
 GameObject* ball;
 
+GameObject* heart;
+int player1HP, player2HP;
+
 bool chk;
 bool start;
 
@@ -83,17 +87,29 @@ time_t tmr;
 
 vector<Effect*> effList;
 
+bool gameOver;
+GameObject* gameOverScreen;
+
+AudioBackground* music;
+AudioClip* soundDamage;
+AudioClip* soundKill;
+
 void AddEffect(GameObject* ob)
 {
 	Effect* eff = new Effect(bis->GetRenderer(), effectSurface);
 	eff->x = (ob->x+(ob->width/2))-(eff->GetWidth()/2);
 	eff->y = (ob->y+(ob->width/2))-(eff->GetHeight()/2);
 	effList.push_back(eff);
+
+	soundDamage->Play();
 }
 
-void Start()
+void GameSetup()
 {
-	srand(time(NULL));
+	gameOver = false;
+
+	player1HP = 3;
+	player2HP = 3;
 
 	speed = 10;
 	mX = 0;
@@ -139,26 +155,59 @@ void Start()
 
 	effectSurface = new GameSurface();
 	effectSurface->Load("source/Effect.png");
+
+	heart = new GameObject(bis->GetRenderer());
+	heart->Load("source/Heart.png");
+	heart->width = 45;
+	heart->height = 40;
+
+	gameOverScreen = new GameObject(bis->GetRenderer());
+	gameOverScreen->Load("source/GameOver2.png");
+	gameOverScreen->x = 150;
+	gameOverScreen->y = 100;
+	gameOverScreen->width = 500;
+	gameOverScreen->height = 400;
+
+	soundDamage = new AudioClip();
+	soundDamage->Load("source/sounds/Damage.wav");
+
+	soundKill = new AudioClip();
+	soundKill->Load("source/sounds/StartGame.wav");
+
+	music = new AudioBackground();
+	music->Load("source/sounds/Music.wav");
+	music->Play();
+}
+
+void Start()
+{
+	srand(time(NULL));
+	GameSetup();
 }
 
 void Update()
 {
-	if(Kleft)
-	{
-		player1->x -= speed;
-	}
-	else if(Kright)
-	{
-		player1->x += speed;
-	}
+	int i;
 
-	if(player1->x <= 0)
+	if(!gameOver)
 	{
-		player1->x = 0;
-	}
-	else if(player1->x >= screenWidth-player1->width)
-	{
-		player1->x = screenWidth-player1->width;
+		if(Kleft)
+		{
+			player1->x -= speed;
+		}
+		else if(Kright)
+		{
+			player1->x += speed;
+		}
+
+		if(player1->x <= 0)
+		{
+			player1->x = 0;
+		}
+		else if(player1->x >= screenWidth-player1->width)
+		{
+			player1->x = screenWidth-player1->width;
+		}
 	}
 
 	if(player2->x > ball->x-(ball->width/2) || player2->x+player2->width < ball->x+(ball->width/2))
@@ -219,26 +268,54 @@ void Update()
 
 	if(!start)
 	{
-		if(time(0)-tmr >= 2)
+		if(!gameOver)
 		{
-			int ranY = rand() % 2;
-			int ranX = (rand() % (speed*2)+1)-speed;
-
-			if(ranY == 0)
+			if(time(0)-tmr >= 2)
 			{
-				chk = true;
-				mY = speed/2;
-			}else{
-				chk = false;
-				mY = -speed/2;
-			}
+				int ranY = rand() % 2;
+				int ranX = (rand() % (speed*2)+1)-speed;
 
-			mX = ranX;
-			start = true;
+				if(ranY == 0)
+				{
+					chk = true;
+					mY = speed/2;
+				}else{
+					chk = false;
+					mY = -speed/2;
+				}
+
+				mX = ranX;
+				start = true;
+			}
+		}else{
+
 		}
 	}else{
-		if(ball->y < -ball->width || ball->y > screenWidth+ball->width)
+		if(ball->y < -ball->height || ball->y > screenWidth+ball->height)
 		{
+			if(ball->y > screenWidth+ball->height)
+			{
+				if(player1HP > 1)
+				{
+					player1HP--;
+				}else{
+					player1HP--;
+					gameOver = true;
+				}
+			}
+			else if(ball->y < -ball->height)
+			{
+				if(player2HP > 1)
+				{
+					player2HP--;
+				}else{
+					player2HP--;
+					gameOver = true;
+				}
+			}
+
+			soundKill->Play();
+
 			start = false;
 			tmr = time(0);
 			mX = 0;
@@ -258,7 +335,24 @@ void Update()
 	player2->Render();
 	ball->Render();
 
-	for(int i = 0; i < effList.size(); i++)
+	if(gameOver)
+		gameOverScreen->Render();
+
+	for(i = 0; i < player2HP; i++)
+	{
+		heart->y = 0;
+		heart->x = 10+(i*heart->width);
+		heart->Render();
+	}
+
+	for(i = 0; i < player1HP; i++)
+	{
+		heart->y = screenHeight-heart->height-2;
+		heart->x = ((screenWidth-heart->width)-10)-(i*heart->width);
+		heart->Render();
+	}
+
+	for(i = 0; i < effList.size(); i++)
 	{
 		if(effList[i]->IsPlay())
 		{
@@ -271,34 +365,7 @@ void Update()
 	}
 }
 
-void Event()
-{
-	switch(bis->GetEvent().type)
-	{
-	case SDL_KEYDOWN:
-		if(bis->GetEvent().key.keysym.sym == SDLK_LEFT)
-		{
-			Kleft = true;
-		}
-		else if(bis->GetEvent().key.keysym.sym == SDLK_RIGHT)
-		{
-			Kright = true;
-		}
-		break;
-	case SDL_KEYUP:
-		if(bis->GetEvent().key.keysym.sym == SDLK_LEFT)
-		{
-			Kleft = false;
-		}
-		else if(bis->GetEvent().key.keysym.sym == SDLK_RIGHT)
-		{
-			Kright = false;
-		}
-		break;
-	}
-}
-
-void Close()
+void GameClear()
 {
 	for(int i = 0; i < effList.size(); i++)
 	{
@@ -325,6 +392,66 @@ void Close()
 
 	delete effectSurface;
 	effectSurface = NULL;
+
+	delete heart;
+	heart = NULL;
+
+	delete music;
+	music = NULL;
+
+	delete soundDamage;
+	soundDamage = NULL;
+
+	delete soundKill;
+	soundKill = NULL;
+
+	delete gameOverScreen;
+	gameOverScreen = NULL;
+}
+
+void Event()
+{
+	switch(bis->GetEvent().type)
+	{
+	case SDL_KEYDOWN:
+		if(bis->GetEvent().key.keysym.sym == SDLK_SPACE)
+		{
+			if(gameOver)
+			{
+				GameClear();
+				GameSetup();
+			}
+		}
+		else if(bis->GetEvent().key.keysym.sym == SDLK_LEFT)
+		{
+			Kleft = true;
+		}
+		else if(bis->GetEvent().key.keysym.sym == SDLK_RIGHT)
+		{
+			Kright = true;
+		}
+		else if(bis->GetEvent().key.keysym.sym == SDLK_RETURN)
+		{
+			if(gameOver)
+				bis->Quit();
+		}
+		break;
+	case SDL_KEYUP:
+		if(bis->GetEvent().key.keysym.sym == SDLK_LEFT)
+		{
+			Kleft = false;
+		}
+		else if(bis->GetEvent().key.keysym.sym == SDLK_RIGHT)
+		{
+			Kright = false;
+		}
+		break;
+	}
+}
+
+void Close()
+{
+	GameClear();
 
 	delete bis;
 	bis = NULL;
