@@ -9,7 +9,7 @@ public:
 	bool gameStart;
 	bool dead;
 	int x, y, width, height;
-	int mX;
+	int mX, mY;
 
 	Monster(SDL_Renderer* renderer, GameSurface* surface);
 	~Monster();
@@ -28,6 +28,7 @@ Monster::Monster(SDL_Renderer* renderer, GameSurface* surface)
 	x = 0;
 	y = 0;
 	mX = 3;
+	mY = -10;
 	dead = false;
 
 	gameObject = new GameObject(renderer);
@@ -59,6 +60,13 @@ void Monster::Render()
 	gameObject->y = y;
 
 	gameObject->Render();
+
+	if(dead)
+	{
+		mY += 1;
+		gameObject->Stop();
+		gameObject->SetFlip(FLIP_VERTICAL);
+	}
 }
 
 void Monster::Flip(int flip)
@@ -343,35 +351,53 @@ void Update()
 		{
 			monList[i]->gameStart = !end;
 
-			if(!end)
+			if(!end && !monList[i]->dead)
+			{
 				monList[i]->x += monList[i]->mX;
-
-			if(monList[i]->mX > 0)
-			{	
-				if((Map[(monList[i]->y+monList[i]->height-1)/wall->height][(monList[i]->x+monList[i]->width-1)/wall->width] == 0 && Map[((monList[i]->y+monList[i]->height-1)/wall->height)+1][(monList[i]->x+monList[i]->width-1)/wall->width] == 0) || Map[(monList[i]->y+monList[i]->height-1)/wall->height][(monList[i]->x+monList[i]->width-1)/wall->width] == 1)
-				{
-					monList[i]->mX = -monList[i]->mX;
-					monList[i]->Flip(0);
-				}
 			}
-			else if(monList[i]->mX < 0)
-			{	
-				if((Map[(monList[i]->y+monList[i]->height-1)/wall->height][monList[i]->x/wall->width] == 0 && Map[((monList[i]->y+monList[i]->height-1)/wall->height)+1][monList[i]->x/wall->width] == 0) || Map[(monList[i]->y+monList[i]->height-1)/wall->height][monList[i]->x/wall->width] == 1)
-				{
-					monList[i]->mX = -monList[i]->mX;
-					monList[i]->Flip(1);
+			else if(!end && monList[i]->dead)
+			{
+				monList[i]->y += monList[i]->mY;
+			}
+
+			if(!monList[i]->dead)
+			{
+				if(monList[i]->mX > 0)
+				{	
+					if((Map[(monList[i]->y+monList[i]->height-1)/wall->height][(monList[i]->x+monList[i]->width-1)/wall->width] == 0 && Map[((monList[i]->y+monList[i]->height-1)/wall->height)+1][(monList[i]->x+monList[i]->width-1)/wall->width] == 0) || Map[(monList[i]->y+monList[i]->height-1)/wall->height][(monList[i]->x+monList[i]->width-1)/wall->width] == 1)
+					{
+						monList[i]->mX = -monList[i]->mX;
+						monList[i]->Flip(0);
+					}
+				}
+				else if(monList[i]->mX < 0)
+				{	
+					if((Map[(monList[i]->y+monList[i]->height-1)/wall->height][monList[i]->x/wall->width] == 0 && Map[((monList[i]->y+monList[i]->height-1)/wall->height)+1][monList[i]->x/wall->width] == 0) || Map[(monList[i]->y+monList[i]->height-1)/wall->height][monList[i]->x/wall->width] == 1)
+					{
+						monList[i]->mX = -monList[i]->mX;
+						monList[i]->Flip(1);
+					}
 				}
 			}
 
 			monList[i]->Render();
 
-			if(monList[i]->HitTest(mc))
+			if(!monList[i]->dead && !end)
 			{
-				if(monList[i]->y+(monList[i]->height/2) < mc->y+mc->height)
+				if(monList[i]->HitTest(mc))
 				{
-					end = true;
-					mc->Stop();
-				}else{
+					if(monList[i]->y+(monList[i]->height/2) < mc->y+mc->height)
+					{
+						end = true;
+						mc->Stop();
+					}else{
+						monList[i]->dead = true;
+						mY = -20;
+					}
+				}
+			}else{
+				if(monList[i]->y > screenHeight)
+				{
 					delete monList[i];
 					monList[i] = NULL;
 					monList.erase(monList.begin()+i);
