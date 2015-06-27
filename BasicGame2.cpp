@@ -396,6 +396,7 @@ void GameClear()
 	delete heart;
 	heart = NULL;
 
+	music->Stop();
 	delete music;
 	music = NULL;
 

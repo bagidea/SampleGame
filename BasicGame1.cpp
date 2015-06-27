@@ -1,5 +1,6 @@
 #include "GameWindow.h"
 #include "GameObject.h"
+#include "GameAudio.h"
 
 #include <vector>
 
@@ -183,6 +184,11 @@ struct position
 vector<position*> tile;
 vector<GameObject*> coin;
 
+AudioBackground* music;
+AudioClip* soundDamage;
+AudioClip* soundCoin;
+AudioClip* soundKill;
+
 void GenMap()
 {
 	int i, a;
@@ -303,6 +309,19 @@ void GameSetup()
 
 	effectSurface = new GameSurface();
 	effectSurface->Load("source/Effect.png");
+
+	soundDamage = new AudioClip();
+	soundDamage->Load("source/sounds/Damage.wav");
+
+	soundCoin = new AudioClip();
+	soundCoin->Load("source/sounds/sf.wav");
+
+	soundKill = new AudioClip();
+	soundKill->Load("source/sounds/StartGame.wav");
+
+	music = new AudioBackground();
+	music->Load("source/sounds/Music2.wav");
+	music->Play();
 }
 
 void Start()
@@ -408,6 +427,8 @@ void Update()
 				delete coin[i];
 				coin[i] = NULL;
 				coin.erase(coin.begin()+i);
+
+				soundCoin->Play();
 			}else{
 				if(end)
 					coin[i]->Stop();
@@ -459,10 +480,14 @@ void Update()
 					{
 						end = true;
 						mc->Stop();
+
+						soundKill->Play();
 					}else{
 						monList[i]->dead = true;
 						mY = -20;
 						AddEffect(mc);
+
+						soundDamage->Play();
 					}
 				}
 			}else{
@@ -550,6 +575,19 @@ void GameClear()
 
 	delete effectSurface;
 	effectSurface = NULL;
+
+	music->Stop();
+	delete music;
+	music = NULL;
+
+	delete soundDamage;
+	soundDamage = NULL;
+
+	delete soundCoin;
+	soundCoin = NULL;
+
+	delete soundKill;
+	soundKill = NULL;
 
 	delete gameOver;
 	gameOver = NULL;

@@ -71,7 +71,12 @@ bool AudioClip::Load(string path)
 	return true;
 }
 
+int channelSound = 0;
+
 void AudioClip::Play()
 {
-	Mix_PlayChannel(-1, audio, 0);
+	Mix_PlayChannel(channelSound++, audio, 0);
+
+	if(channelSound >= 7)
+		channelSound = 0;
 }
