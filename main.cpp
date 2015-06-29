@@ -1,5 +1,4 @@
 #include "GameWindow.h"
-#include "GameObject.h"
 
 int screenWidth = 800;
 int screenHeight = 600;

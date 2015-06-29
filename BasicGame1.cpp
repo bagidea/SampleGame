@@ -2,8 +2,6 @@
 #include "GameObject.h"
 #include "GameAudio.h"
 
-#include <vector>
-
 class Effect
 {
 public:
