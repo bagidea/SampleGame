@@ -64,7 +64,7 @@ class FireBall
 {
 public:
 	int x, y, speed;
-	bool isDead;
+	bool isDead, gameOver;
 
 	FireBall(SDL_Renderer* renderer, GameSurface* surface);
 	~FireBall();
@@ -79,6 +79,8 @@ private:
 
 FireBall::FireBall(SDL_Renderer* renderer, GameSurface* surface)
 {
+	gameOver = false;
+
 	x = 0;
 	y = 0;
 	speed = 0;
@@ -98,9 +100,12 @@ FireBall::~FireBall()
 
 int FireBall::Render()
 {
-	gameObject->x = x;
-	y += speed;
-	gameObject->y = y;
+	if(!gameOver)
+	{
+		gameObject->x = x;
+		y += speed;
+		gameObject->y = y;
+	}
 
 	gameObject->Render();
 
@@ -125,7 +130,7 @@ class Enemy
 {
 public:
 	int x, y, speed;
-	bool left, isDead, isShoot;
+	bool left, isDead, isShoot, gameOver;
 
 	Enemy(SDL_Renderer* renderer, GameSurface* surface);
 	~Enemy();
@@ -142,6 +147,8 @@ private:
 
 Enemy::Enemy(SDL_Renderer* renderer, GameSurface* surface)
 {
+	gameOver = false;
+
 	x = 0;
 	y = 0;
 
@@ -166,17 +173,20 @@ Enemy::~Enemy()
 
 void Enemy::Render()
 {
-	if(left)
-		x -= speed;
-	else
-		x += speed;
+	if(!gameOver)
+	{
+		if(left)
+			x -= speed;
+		else
+			x += speed;
 
-	y++;
+		y++;
+	}
 
 	gameObject->x = x;
 	gameObject->y = y;
 
-	if(time(0)-tmr >= 2)
+	if(time(0)-tmr >= 1)
 	{
 		isShoot = true;
 		tmr = time(0);
@@ -199,13 +209,18 @@ int velocity;
 int maxVelocity;
 int speed;
 
+GameObject* heart;
+int HP;
+
 GameObject* mc;
 
 GameSurface* bgSurface;
 GameObject* bg1;
 GameObject* bg2;
 
+GameObject* ammunition;
 int playerShoot;
+
 GameSurface* fireSurface;
 vector<FireBall*> fireBall;
 
@@ -215,6 +230,9 @@ vector<Enemy*> enemy;
 
 GameSurface* effectSurface;
 vector<Effect*> effList;
+
+bool gameOver;
+GameObject* gameOverScreen;
 
 AudioBackground* music;
 AudioClip* soundDamage;
@@ -227,12 +245,15 @@ void AddEffect(GameObject* ob)
 	eff->x = (ob->x+(ob->width/2))-(eff->GetWidth()/2);
 	eff->y = (ob->y+(ob->width/2))-(eff->GetHeight()/2);
 	effList.push_back(eff);
+
+	soundDamage->Play();
 }
 
-void Start()
+void GameSetup()
 {
-	srand(time(NULL));
 	tmr = time(0);
+	gameOver = false;
+	HP = 3;
 
 	mL = false;
 	mR = false;
@@ -263,6 +284,16 @@ void Start()
 	bg2->height = screenHeight;
 	bg2->y = -screenHeight;
 
+	heart = new GameObject(bis->GetRenderer());
+	heart->Load("source/Heart.png");
+	heart->width = 45;
+	heart->height = 40;
+
+	ammunition = new GameObject(bis->GetRenderer());
+	ammunition->Load("source/Ammunition.png");
+	ammunition->width = 45;
+	ammunition->height = 40;
+
 	enemySurface = new GameSurface();
 	enemySurface->Load("source/ShipEnemy.png");
 
@@ -271,6 +302,13 @@ void Start()
 
 	effectSurface = new GameSurface();
 	effectSurface->Load("source/Effect.png");
+
+	gameOverScreen = new GameObject(bis->GetRenderer());
+	gameOverScreen->Load("source/GameOver2.png");
+	gameOverScreen->x = 150;
+	gameOverScreen->y = 100;
+	gameOverScreen->width = 500;
+	gameOverScreen->height = 400;
 
 	soundDamage = new AudioClip();
 	soundDamage->Load("source/sounds/Damage.wav");
@@ -286,63 +324,76 @@ void Start()
 	music->Play();
 }
 
+void Start()
+{
+	srand(time(NULL));
+	
+	GameSetup();
+}
+
 void Update()
 {
 	int i, a;
 
-	if(mL)
+	if(!gameOver)
 	{
-		velocity -= speed;
-		if(velocity <= -maxVelocity)
-			velocity = -maxVelocity;
+		if(mL)
+		{
+			velocity -= speed;
+			if(velocity <= -maxVelocity)
+				velocity = -maxVelocity;
+		}
+		else if(mR)
+		{
+			velocity += speed;
+			if(velocity >= maxVelocity)
+				velocity = maxVelocity;
+		}else{
+			if(velocity > 0)
+				velocity -= speed/2;
+			else if(velocity < 0)
+				velocity += speed/2;
+		}
+
+		mc->x += velocity;
+
+		if(mc->x <= 0)
+		{
+			mc->x = 0;
+			velocity = 0;
+		}
+		else if(mc->x >= screenWidth-mc->width)
+		{
+			mc->x = screenWidth-mc->width;
+			velocity = 0;
+		}
+
+		bg1->y += 5;
+		bg2->y += 5;
+
+		if(bg1->y > screenHeight)
+			bg1->y = -screenHeight;
+
+		if(bg2->y > screenHeight)
+			bg2->y = -screenHeight;
 	}
-	else if(mR)
-	{
-		velocity += speed;
-		if(velocity >= maxVelocity)
-			velocity = maxVelocity;
-	}else{
-		if(velocity > 0)
-			velocity -= speed/2;
-		else if(velocity < 0)
-			velocity += speed/2;
-	}
-
-	mc->x += velocity;
-
-	if(mc->x <= 0)
-	{
-		mc->x = 0;
-		velocity = 0;
-	}
-	else if(mc->x >= screenWidth-mc->width)
-	{
-		mc->x = screenWidth-mc->width;
-		velocity = 0;
-	}
-
-	bg1->y += 5;
-	bg2->y += 5;
-
-	if(bg1->y > screenHeight)
-		bg1->y = -screenHeight;
-
-	if(bg2->y > screenHeight)
-		bg2->y = -screenHeight;
 
 	bg1->Render();
 	bg2->Render();
 
 	mc->Render();
 
-	if(time(0)-tmr >= 3)
+	if(!gameOver)
 	{
-		Enemy* en = new Enemy(bis->GetRenderer(), enemySurface);
-		en->x = rand() % (screenWidth-en->GetWidth());
-		en->y = -en->GetHeight();
-		enemy.push_back(en);
+		if(time(0)-tmr >= 3)
+		{
+			Enemy* en = new Enemy(bis->GetRenderer(), enemySurface);
+			en->x = rand() % (screenWidth-en->GetWidth());
+			en->y = -en->GetHeight();
+			enemy.push_back(en);
 
-		tmr = time(0);
+			tmr = time(0);
+		}
 	}
 
 	for(i = 0; i < enemy.size(); i++)
@@ -358,24 +409,27 @@ void Update()
 
 		enemy[i]->Render();
 
-		if(enemy[i]->isShoot)
+		if(!gameOver)
 		{
-			FireBall* fire = new FireBall(bis->GetRenderer(), fireSurface);
-			fire->x = (enemy[i]->x+(enemy[i]->GetWidth()/2))-(fire->GetWidth()/2);
-			fire->y = enemy[i]->y;
-			fire->speed = 10;
-			fireBall.push_back(fire);
+			if(enemy[i]->isShoot)
+			{
+				FireBall* fire = new FireBall(bis->GetRenderer(), fireSurface);
+				fire->x = (enemy[i]->x+(enemy[i]->GetWidth()/2))-(fire->GetWidth()/2);
+				fire->y = enemy[i]->y;
+				fire->speed = 10;
+				fireBall.push_back(fire);
 
-			enemy[i]->isShoot = false;
+				enemy[i]->isShoot = false;
 
-			soundShoot2->Play();
-		}
+				soundShoot2->Play();
+			}
 
-		if(enemy[i]->y > screenHeight)
-		{
-			delete enemy[i];
-			enemy[i] = NULL;
-			enemy.erase(enemy.begin()+i);
+			if(enemy[i]->y > screenHeight)
+			{
+				delete enemy[i];
+				enemy[i] = NULL;
+				enemy.erase(enemy.begin()+i);
+			}
 		}
 	}
 
@@ -383,38 +437,48 @@ void Update()
 	{
 		playerShoot += fireBall[i]->Render();
 
-		if(fireBall[i]->HitTest(mc) && fireBall[i]->speed > 0)
+		if(!gameOver)
 		{
-			AddEffect(mc);
-			soundDamage->Play();
-
-			delete fireBall[i];
-			fireBall[i] = NULL;
-			fireBall.erase(fireBall.begin()+i);
-		}
-		else if(fireBall[i]->isDead)
-		{
-			delete fireBall[i];
-			fireBall[i] = NULL;
-			fireBall.erase(fireBall.begin()+i);
-		}else{
-			for(a = 0; a < enemy.size(); a++)
+			if(fireBall[i]->HitTest(mc) && fireBall[i]->speed > 0)
 			{
-				if(fireBall[i]->HitTest(enemy[a]->GetGameObject()) && fireBall[i]->speed < 0)
+				AddEffect(mc);
+
+				HP--;
+				if(HP <= 0)
 				{
-					playerShoot++;
-					AddEffect(enemy[a]->GetGameObject());
+					for(a = 0; a < fireBall.size(); a++)
+						fireBall[a]->gameOver = true;
+					for(a = 0; a < enemy.size(); a++)
+						enemy[a]->gameOver = true;
+					gameOver = true;
+				}
 
-					soundDamage->Play();
+				delete fireBall[i];
+				fireBall[i] = NULL;
+				fireBall.erase(fireBall.begin()+i);
+			}
+			else if(fireBall[i]->isDead)
+			{
+				delete fireBall[i];
+				fireBall[i] = NULL;
+				fireBall.erase(fireBall.begin()+i);
+			}else{
+				for(a = 0; a < enemy.size(); a++)
+				{
+					if(fireBall[i]->HitTest(enemy[a]->GetGameObject()) && fireBall[i]->speed < 0)
+					{
+						playerShoot++;
+						AddEffect(enemy[a]->GetGameObject());
 
-					delete enemy[a];
-					enemy[a] = NULL;
-					delete fireBall[i];
-					fireBall[i] = NULL;
+						delete enemy[a];
+						enemy[a] = NULL;
+						delete fireBall[i];
+						fireBall[i] = NULL;
 
-					enemy.erase(enemy.begin()+a);
-					fireBall.erase(fireBall.begin()+i);
-					break;
+						enemy.erase(enemy.begin()+a);
+						fireBall.erase(fireBall.begin()+i);
+						break;
+					}
 				}
 			}
 		}
@@ -431,46 +495,26 @@ void Update()
 			effList.erase(effList.begin()+i);
 		}
 	}
-}
 
-void Event()
-{
-	switch(bis->GetEvent().type)
+	for(i = 0; i < HP; i++)
 	{
-	case SDL_KEYDOWN:
-		if(bis->GetEvent().key.keysym.sym == SDLK_SPACE && playerShoot > 0)
-		{
-			FireBall* fire = new FireBall(bis->GetRenderer(), fireSurface);
-			fire->x = (mc->x+(mc->width/2))-(fire->GetWidth()/2);
-			fire->y = mc->y;
-			fire->speed = -10;
-			fireBall.push_back(fire);
-			playerShoot--;
-
-			soundShoot->Play();
-		}
-		else if(bis->GetEvent().key.keysym.sym == SDLK_LEFT)
-		{
-			mL = true;
-		}
-		else if(bis->GetEvent().key.keysym.sym == SDLK_RIGHT)
-		{
-			mR = true;
-		}
-		break;
-	case SDL_KEYUP:
-		if(bis->GetEvent().key.keysym.sym == SDLK_LEFT)
-		{
-			mL = false;
-		}
-		else if(bis->GetEvent().key.keysym.sym == SDLK_RIGHT)
-		{
-			mR = false;
-		}
+		heart->y = screenHeight-heart->height-2;
+		heart->x = 10+(i*heart->width);
+		heart->Render();
 	}
+
+	for(i = 0; i < playerShoot; i++)
+	{
+		ammunition->y = screenHeight-ammunition->height-2;
+		ammunition->x = ((screenWidth-ammunition->width)-10)-(i*ammunition->width);
+		ammunition->Render();
+	}
+
+	if(gameOver)
+		gameOverScreen->Render();
 }
 
-void Close()
+void GameClear()
 {
 	int i;
 
@@ -485,6 +529,12 @@ void Close()
 
 	delete bgSurface;
 	bgSurface = NULL;
+
+	delete heart;
+	heart = NULL;
+
+	delete ammunition;
+	ammunition = NULL;
 
 	for(i = 0; i < enemy.size(); i++)
 	{
@@ -519,6 +569,9 @@ void Close()
 	delete effectSurface;
 	effectSurface = NULL;
 
+	delete gameOverScreen;
+	gameOverScreen = NULL;
+
 	music->Stop();
 	delete music;
 	music = NULL;
@@ -531,6 +584,62 @@ void Close()
 
 	delete soundShoot2;
 	soundShoot2 = NULL;
+}
+
+void Event()
+{
+	switch(bis->GetEvent().type)
+	{
+	case SDL_KEYDOWN:
+		if(bis->GetEvent().key.keysym.sym == SDLK_SPACE)
+		{
+			if(!gameOver)
+			{
+				if(playerShoot > 0)
+				{
+					FireBall* fire = new FireBall(bis->GetRenderer(), fireSurface);
+					fire->x = (mc->x+(mc->width/2))-(fire->GetWidth()/2);
+					fire->y = mc->y;
+					fire->speed = -10;
+					fireBall.push_back(fire);
+					playerShoot--;
+
+					soundShoot->Play();
+				}
+			}else{
+				GameClear();
+				GameSetup();
+			}
+		}
+		else if(bis->GetEvent().key.keysym.sym == SDLK_LEFT)
+		{
+			mL = true;
+		}
+		else if(bis->GetEvent().key.keysym.sym == SDLK_RIGHT)
+		{
+			mR = true;
+		}
+		else if(bis->GetEvent().key.keysym.sym == SDLK_RETURN)
+		{
+			if(gameOver)
+				bis->Quit();
+		}
+		break;
+	case SDL_KEYUP:
+		if(bis->GetEvent().key.keysym.sym == SDLK_LEFT)
+		{
+			mL = false;
+		}
+		else if(bis->GetEvent().key.keysym.sym == SDLK_RIGHT)
+		{
+			mR = false;
+		}
+	}
+}
+
+void Close()
+{
+	GameClear();
 
 	delete bis;
 	bis = NULL;

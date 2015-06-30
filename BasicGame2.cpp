@@ -335,9 +335,6 @@ void Update()
 	player2->Render();
 	ball->Render();
 
-	if(gameOver)
-		gameOverScreen->Render();
-
 	for(i = 0; i < player2HP; i++)
 	{
 		heart->y = 0;
@@ -363,6 +360,9 @@ void Update()
 			effList.erase(effList.begin()+i);
 		}
 	}
+
+	if(gameOver)
+		gameOverScreen->Render();
 }
 
 void GameClear()
