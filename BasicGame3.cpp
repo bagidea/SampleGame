@@ -16,6 +16,8 @@ public:
 
 	void Render();
 	int GetWidth();
+
+	bool HitTest(GameObject* ob);
 private:
 	GameObject* gameObject;
 };
@@ -55,6 +57,11 @@ void FireBall::Render()
 
 int FireBall::GetWidth(){return gameObject->width;}
 
+bool FireBall::HitTest(GameObject* ob)
+{
+	gameObject->HitTest(ob);
+}
+
 class Enemy
 {
 public:
@@ -67,6 +74,8 @@ public:
 	void Render();
 	int GetWidth();
 	int GetHeight();
+
+	GameObject* GetGameObject();
 private:
 	int tmr;
 	GameObject* gameObject;
@@ -119,6 +128,7 @@ void Enemy::Render()
 
 int Enemy::GetWidth(){return gameObject->width;}
 int Enemy::GetHeight(){return gameObject->height;}
+GameObject* Enemy::GetGameObject(){return gameObject;}
 
 int screenWidth = 800;
 int screenHeight = 600;
@@ -184,7 +194,7 @@ void Start()
 
 void Update()
 {
-	int i;
+	int i, a;
 
 	if(mL)
 	{
@@ -276,12 +286,35 @@ void Update()
 	for(i = 0; i < fireBall.size(); i++)
 	{
 		fireBall[i]->Render();
-		
-		if(fireBall[i]->isDead)
+
+		for(a = 0; a < enemy.size(); a++)
+		{
+			if(fireBall[i]->HitTest(enemy[a]->GetGameObject()) && fireBall[i]->speed < 0)
+			{
+				delete enemy[a];
+				enemy[a] = NULL;
+				delete fireBall[i];
+				fireBall[i] = NULL;
+
+				enemy.erase(enemy.begin()+a);
+				fireBall.erase(fireBall.begin()+i);
+				break;
+			}
+		}
+
+		if(fireBall[i]->HitTest(mc) && fireBall[i]->speed > 0)
 		{
 			delete fireBall[i];
 			fireBall[i] = NULL;
 			fireBall.erase(fireBall.begin()+i);
+			break;
+		}
+		else if(fireBall[i]->isDead)
+		{
+			delete fireBall[i];
+			fireBall[i] = NULL;
+			fireBall.erase(fireBall.begin()+i);
+			break;
 		}
 	}
 }
