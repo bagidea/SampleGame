@@ -5,6 +5,61 @@
 #include "GameObject.h"
 #include "GameAudio.h"
 
+class Effect
+{
+public:
+	bool end;
+	int x;
+	int y;
+
+	Effect(SDL_Renderer* renderer, GameSurface* gameSurface);
+	~Effect();
+
+	int GetWidth();
+	int GetHeight();
+
+	void Render();
+	bool IsPlay();
+private:
+	GameObject* gameObject;
+};
+
+Effect::Effect(SDL_Renderer* renderer, GameSurface* gameSurface)
+{	
+	end = false;
+	x = 0;
+	y = 0;
+
+	gameObject = new GameObject(renderer);
+	gameObject->CreateGameTextureFromGameSurface(gameSurface);
+	gameObject->GenerateClip(5, 4);
+	gameObject->SetLoop(false);
+	gameObject->width = 300;
+	gameObject->height = 300;
+	gameObject->Play();
+}
+
+Effect::~Effect()
+{
+	delete gameObject;
+	gameObject = NULL;
+}
+
+void Effect::Render()
+{
+	gameObject->x = x;
+	gameObject->y = y;
+	gameObject->Render();
+	if(!gameObject->IsPlay())
+	{
+		end = true;
+	}
+}
+
+bool Effect::IsPlay(){return gameObject->IsPlay();}
+int Effect::GetWidth(){return gameObject->width;}
+int Effect::GetHeight(){return gameObject->height;}
+
 class FireBall
 {
 public:
@@ -14,7 +69,7 @@ public:
 	FireBall(SDL_Renderer* renderer, GameSurface* surface);
 	~FireBall();
 
-	void Render();
+	int Render();
 	int GetWidth();
 
 	bool HitTest(GameObject* ob);
@@ -31,8 +86,8 @@ FireBall::FireBall(SDL_Renderer* renderer, GameSurface* surface)
 
 	gameObject = new GameObject(renderer);
 	gameObject->CreateGameTextureFromGameSurface(surface);
-	gameObject->width = 50;
-	gameObject->height = 50;
+	gameObject->width = 20;
+	gameObject->height = 20;
 }
 
 FireBall::~FireBall()
@@ -41,7 +96,7 @@ FireBall::~FireBall()
 	gameObject = NULL;
 }
 
-void FireBall::Render()
+int FireBall::Render()
 {
 	gameObject->x = x;
 	y += speed;
@@ -49,10 +104,14 @@ void FireBall::Render()
 
 	gameObject->Render();
 
-	if(y < -50 || y > 650)
+	if(y < -GetWidth() || y > 600+GetWidth())
 	{
 		isDead = true;
+		if(y < -GetWidth())
+			return 1;
 	}
+
+	return 0;
 }
 
 int FireBall::GetWidth(){return gameObject->width;}
@@ -146,12 +205,29 @@ GameSurface* bgSurface;
 GameObject* bg1;
 GameObject* bg2;
 
+int playerShoot;
 GameSurface* fireSurface;
 vector<FireBall*> fireBall;
 
 int tmr;
 GameSurface* enemySurface;
 vector<Enemy*> enemy;
+
+GameSurface* effectSurface;
+vector<Effect*> effList;
+
+AudioBackground* music;
+AudioClip* soundDamage;
+AudioClip* soundShoot;
+AudioClip* soundShoot2;
+
+void AddEffect(GameObject* ob)
+{
+	Effect* eff = new Effect(bis->GetRenderer(), effectSurface);
+	eff->x = (ob->x+(ob->width/2))-(eff->GetWidth()/2);
+	eff->y = (ob->y+(ob->width/2))-(eff->GetHeight()/2);
+	effList.push_back(eff);
+}
 
 void Start()
 {
@@ -163,6 +239,8 @@ void Start()
 	velocity = 0;
 	maxVelocity = 10;
 	speed = 2;
+
+	playerShoot = 3;
 
 	mc = new GameObject(bis->GetRenderer());
 	mc->Load("source/Jet.png");
@@ -190,6 +268,22 @@ void Start()
 
 	fireSurface = new GameSurface();
 	fireSurface->Load("source/FireBall.png");
+
+	effectSurface = new GameSurface();
+	effectSurface->Load("source/Effect.png");
+
+	soundDamage = new AudioClip();
+	soundDamage->Load("source/sounds/Damage.wav");
+
+	soundShoot = new AudioClip();
+	soundShoot->Load("source/sounds/sf.wav");
+
+	soundShoot2 = new AudioClip();
+	soundShoot2->Load("source/sounds/StartGame.wav");
+
+	music = new AudioBackground();
+	music->Load("source/sounds/Music2.wav");
+	music->Play();
 }
 
 void Update()
@@ -273,6 +367,8 @@ void Update()
 			fireBall.push_back(fire);
 
 			enemy[i]->isShoot = false;
+
+			soundShoot2->Play();
 		}
 
 		if(enemy[i]->y > screenHeight)
@@ -285,36 +381,54 @@ void Update()
 
 	for(i = 0; i < fireBall.size(); i++)
 	{
-		fireBall[i]->Render();
-
-		for(a = 0; a < enemy.size(); a++)
-		{
-			if(fireBall[i]->HitTest(enemy[a]->GetGameObject()) && fireBall[i]->speed < 0)
-			{
-				delete enemy[a];
-				enemy[a] = NULL;
-				delete fireBall[i];
-				fireBall[i] = NULL;
-
-				enemy.erase(enemy.begin()+a);
-				fireBall.erase(fireBall.begin()+i);
-				break;
-			}
-		}
+		playerShoot += fireBall[i]->Render();
 
 		if(fireBall[i]->HitTest(mc) && fireBall[i]->speed > 0)
 		{
+			AddEffect(mc);
+			soundDamage->Play();
+
 			delete fireBall[i];
 			fireBall[i] = NULL;
 			fireBall.erase(fireBall.begin()+i);
-			break;
 		}
 		else if(fireBall[i]->isDead)
 		{
 			delete fireBall[i];
 			fireBall[i] = NULL;
 			fireBall.erase(fireBall.begin()+i);
-			break;
+		}else{
+			for(a = 0; a < enemy.size(); a++)
+			{
+				if(fireBall[i]->HitTest(enemy[a]->GetGameObject()) && fireBall[i]->speed < 0)
+				{
+					playerShoot++;
+					AddEffect(enemy[a]->GetGameObject());
+
+					soundDamage->Play();
+
+					delete enemy[a];
+					enemy[a] = NULL;
+					delete fireBall[i];
+					fireBall[i] = NULL;
+
+					enemy.erase(enemy.begin()+a);
+					fireBall.erase(fireBall.begin()+i);
+					break;
+				}
+			}
+		}
+	}
+
+	for(i = 0; i < effList.size(); i++)
+	{
+		if(effList[i]->IsPlay())
+		{
+			effList[i]->Render();
+		}else{
+			delete effList[i];
+			effList[i] = NULL;
+			effList.erase(effList.begin()+i);
 		}
 	}
 }
@@ -324,13 +438,16 @@ void Event()
 	switch(bis->GetEvent().type)
 	{
 	case SDL_KEYDOWN:
-		if(bis->GetEvent().key.keysym.sym == SDLK_SPACE)
+		if(bis->GetEvent().key.keysym.sym == SDLK_SPACE && playerShoot > 0)
 		{
 			FireBall* fire = new FireBall(bis->GetRenderer(), fireSurface);
 			fire->x = (mc->x+(mc->width/2))-(fire->GetWidth()/2);
 			fire->y = mc->y;
 			fire->speed = -10;
 			fireBall.push_back(fire);
+			playerShoot--;
+
+			soundShoot->Play();
 		}
 		else if(bis->GetEvent().key.keysym.sym == SDLK_LEFT)
 		{
@@ -390,6 +507,30 @@ void Close()
 
 	delete fireSurface;
 	fireSurface = NULL;
+
+	for(i = 0; i < effList.size(); i++)
+	{
+		delete effList[i];
+		effList[i] = NULL;
+	}
+
+	effList.clear();
+
+	delete effectSurface;
+	effectSurface = NULL;
+
+	music->Stop();
+	delete music;
+	music = NULL;
+
+	delete soundDamage;
+	soundDamage = NULL;
+
+	delete soundShoot;
+	soundShoot = NULL;
+
+	delete soundShoot2;
+	soundShoot2 = NULL;
 
 	delete bis;
 	bis = NULL;
